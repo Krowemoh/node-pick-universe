@@ -30,3 +30,19 @@ Good luck!
 ## Installation Instructions
 
 Once the addon is built, you can copy the build/Release/universe-native.node file to wherever you want and simply require it in a javascript file to begin calling universe subroutines.
+
+For example: 
+```
+require("dotenv").config();
+
+const Universe = require('./universe-native');
+var universe = new Universe.Universe(process.env.U_HOST, process.env.U_USERNAME, process.env.U_PASSWORD, process.env.U_ACCOUNT);
+
+var arg1 = "";
+var arg2 = "John";
+var result = universe.CallSubroutine("NIVT", arg1, arg2, "");
+
+console.log("Arg 1: " + arg1);
+console.log("Arg 2: " + arg2);
+console.log("Result: " , result);
+```
