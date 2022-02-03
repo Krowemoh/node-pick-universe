@@ -8,8 +8,8 @@ You'll most likely need to build this package from source.
 
 
 ### Requirements
-    - a compiler that can compile C++17. (Which on rhel 7 was a bit of a pain to set up.)
-    - node-gyp 
+- a compiler that can compile C++17. (Which on rhel 7 was a bit of a pain to set up.)
+- node-gyp 
 
 There are two libraries that are needed, libuvic and libffi. libuvic is provided by Rocket and I've added that to the lib folder in this repo. libffi needs to be installed by your package manager and you can find it by doing the following:
 
