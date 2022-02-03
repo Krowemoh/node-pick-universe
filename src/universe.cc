@@ -41,22 +41,21 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
         arg_types[pad+i] = &icstring_type;
     }
 
-    if (ffi_prep_cif(&call_interface, FFI_DEFAULT_ABI, arg_len, ret_type, arg_types) == FFI_OK)
-    {
+    if (ffi_prep_cif(&call_interface, FFI_DEFAULT_ABI, arg_len, ret_type, arg_types) == FFI_OK) {
         void *arg_values[arg_len];
 
         char **subname_pointer = &subname;
         arg_values[0] = subname_pointer;
 
         long size = strlen(subname);
-        long int * size_pointer = &size;
+        long * size_pointer = &size;
         arg_values[1] = &size_pointer;
 
         long status = 0;
-        long int * status_pointer = &status;
+        long * status_pointer = &status;
         arg_values[2] = &status_pointer;
 
-        long int * numargs_pointer = &numargs;
+        long * numargs_pointer = &numargs;
         arg_values[3] = &numargs_pointer;
 
         ICSTRING *ptrs[numargs];
@@ -66,7 +65,7 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
             arg_values[pad+i] = &ptrs[i];
         }
 
-        long z = 0;
+        double z = 0;
         ffi_call(&call_interface, FFI_FN(ic_subcall), &z, arg_values);
         return z;
     }
@@ -127,17 +126,28 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
         return env.Null();
 
     } else {
+        int argument_counter = 1;
+        for (int i=0;i<MAX_ARGS;i++) {
+            if (i+1 > info.Length()-1) {
+                icList[i].len = 0;
+                continue;
+            }
 
-        for (int i=1;i<info.Length();i++) {
-            std::string param = info[i].ToString().Utf8Value();
+            std::string param = info[argument_counter].ToString().Utf8Value();
+            argument_counter++;
+
             if (param == "") {
-                icList[i-1].len = 0;
+                char *text = "";
+                long size = strlen(text);
+                icList[i].len = size;
+                icList[i].text = (unsigned char*)ic_calloc(&size);
+                memcpy(icList[i].text, text, icList[i].len);
             } else {
                 char *text = (char *)param.c_str();
                 long size = strlen(text);
-                icList[i-1].len = size;
-                icList[i-1].text = (unsigned char*)ic_malloc(&size);
-                memcpy(icList[i-1].text, text, icList[i-1].len);
+                icList[i].len = size;
+                icList[i].text = (unsigned char*)ic_calloc(&size);
+                memcpy(icList[i].text, text, icList[i].len);
             }
         }
 
@@ -165,6 +175,13 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
         Napi::String data = Napi::String::New(env,x);
         arguments[i-1] = data;
     }
+
+    for (int i=0; i<MAX_ARGS; i++) {
+        if (icList[i].len >0) {
+            ic_free(icList[i].text);
+        }
+    }
+
     return arguments;
 }
 
