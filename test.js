@@ -13,4 +13,4 @@ let sku_list = '';
 
 var result = universe.CallSubroutine("WEB.GET.INVENTORY.MATRIX", status_matrix, language_flag, product, inventory_matrix, product_type_matrix, colour_matrix, sku_list);
 
-console.log(inventory_matrix);
+console.log(result);
