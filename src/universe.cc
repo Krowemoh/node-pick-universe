@@ -24,7 +24,8 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     ffi_type icstring_type;
     ffi_type *icstring_type_elements[3];
 
-    icstring_type.size = icstring_type.alignment = 0;
+    icstring_type.size = 0;
+    icstring_type.alignment = -1;
     icstring_type.type = FFI_TYPE_STRUCT;
     icstring_type.elements = icstring_type_elements;
 
@@ -37,9 +38,9 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     arg_types[2] = &ffi_type_pointer;
     arg_types[3] = &ffi_type_pointer;
 
-    for (int i=0;i <numargs; i++) {
-        arg_types[pad+i] = &icstring_type;
-    }
+        arg_types[4] = &icstring_type;
+        arg_types[5] = &icstring_type;
+        arg_types[6] = &icstring_type;
 
     if (ffi_prep_cif(&call_interface, FFI_DEFAULT_ABI, arg_len, ret_type, arg_types) == FFI_OK) {
         void *arg_values[arg_len];
@@ -51,21 +52,25 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
         long * size_pointer = &size;
         arg_values[1] = &size_pointer;
 
-        long status = 0;
-        long * status_pointer = &status;
-        arg_values[2] = &status_pointer;
+        long sub_status = 0;
+        long * sub_status_pointer = &sub_status;
+        arg_values[2] = &sub_status_pointer;
 
         long * numargs_pointer = &numargs;
         arg_values[3] = &numargs_pointer;
 
         ICSTRING *ptrs[numargs];
+        ptrs[0] = &icList[0];
+        ptrs[1] = &icList[1];
+        ptrs[2] = &icList[2];
 
-        for (int i=0;i <numargs; i++) {
-            ptrs[i] = &icList[i];
-            arg_values[pad+i] = &ptrs[i];
-        }
+        arg_values[4] = &ptrs[0];
+
+        arg_values[5] = &ptrs[2];
+        arg_values[6] = &ptrs[1];
 
         double z = 0;
+        //ic_subcall(*subname_pointer, size_pointer, sub_status_pointer, numargs_pointer, ptrs[0], ptrs[1], ptrs[2]);
         ffi_call(&call_interface, FFI_FN(ic_subcall), &z, arg_values);
         return z;
     }
@@ -75,13 +80,13 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
 
-    if (info.Length() != 4) {
+    if ((int)info.Length() != 4) {
         Napi::TypeError::New(env, "Wrong number of arguments (host, username, password, account).")
             .ThrowAsJavaScriptException();
         return;
     }
 
-    for (int i=0;i <info.Length();i++) {
+    for (int i=0;i <(int)info.Length();i++) {
         if (!info[i].IsString()) {
             char error[100];
             snprintf(error, 100, "Argument %d isn't a string.\n", i);
@@ -99,7 +104,7 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
-    for (int i=0;i <info.Length();i++) {
+    for (int i=0;i <(int)info.Length();i++) {
         if (!info[i].IsString()) {
             char error[100];
             snprintf(error, 100, "Argument %d isn't a string.\n", i);
@@ -116,7 +121,7 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     long code;
     ic_universe_session(server_name, user_name, password, account, &code, NULL);
 
-    int MAX_ARGS = 10;
+    int MAX_ARGS = info.Length() -1;
     ICSTRING icList[MAX_ARGS];
 
     if (code != 0) {
@@ -126,18 +131,11 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
         return env.Null();
 
     } else {
-        int argument_counter = 1;
         for (int i=0;i<MAX_ARGS;i++) {
-            if (i+1 > info.Length()-1) {
-                icList[i].len = 0;
-                continue;
-            }
-
-            std::string param = info[argument_counter].ToString().Utf8Value();
-            argument_counter++;
+            std::string param = info[i+1].ToString().Utf8Value();
 
             if (param == "") {
-                char *text = "";
+                const char *text = "";
                 long size = strlen(text);
                 icList[i].len = size;
                 icList[i].text = (unsigned char*)ic_calloc(&size);
@@ -154,7 +152,7 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
         std::string name = info[0].ToString().Utf8Value();
         char *subname = (char *)name.c_str();
 
-        long sub_status = call_subroutine(subname, info.Length()-1, icList);
+        long sub_status = call_subroutine(subname, MAX_ARGS, icList);
 
         ic_quit(&code);
         if (code != 0) {
@@ -163,17 +161,17 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
 
         if (sub_status != 0) {
             char error[100];
-            snprintf(error, 100, "Failed to complete subroutine. Code = %d\n", sub_status);
+            snprintf(error, 100, "Failed to complete subroutine. Code = %ld\n", sub_status);
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return env.Null();
         }
     }
 
     Napi::Array arguments = Napi::Array::New(env, info.Length()-1);
-    for (int i=1;i<info.Length();i++) {
-        const char *x = (const char*)icList[i-1].text;
+    for (int i=0;i<MAX_ARGS;i++) {
+        const char *x = (const char*)icList[i].text;
         Napi::String data = Napi::String::New(env,x);
-        arguments[i-1] = data;
+        arguments[i] = data;
     }
 
     for (int i=0; i<MAX_ARGS; i++) {
