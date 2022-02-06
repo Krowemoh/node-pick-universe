@@ -11,19 +11,6 @@
 
 using namespace Napi;
 
-double ic_subcall_stub(char *subname, long int *size, long int *stat, long int *numargs, ...) {
-    printf("%s, %ld, %ld, %ld\n", subname, *size, *stat, *numargs);
-    va_list ptr;
-    va_start(ptr, &numargs);
-    printf("Starting loop\n");
-    for (int i = 0; i < 10; i++) {
-        ICSTRING* x = va_arg(ptr, ICSTRING*);
-        printf("%d: %p\n", i, x);
-    }
-    va_end(ptr);
-    return 0;
-}
-
 double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     int pad = 4;
     int arg_len = pad + numargs;
@@ -37,8 +24,7 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     ffi_type icstring_type;
     ffi_type *icstring_type_elements[3];
 
-    icstring_type.size = 0;
-    icstring_type.alignment = 0;
+    icstring_type.size = icstring_type.alignment = 0;
     icstring_type.type = FFI_TYPE_STRUCT;
     icstring_type.elements = icstring_type_elements;
 
@@ -72,30 +58,15 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
         long * numargs_pointer = &numargs;
         arg_values[3] = &numargs_pointer;
 
-        void *ptrs[numargs];
+        ICSTRING *ptrs[numargs];
 
-        ptrs[0] = &icList[0];
-        ptrs[1] = &icList[1];
-        ptrs[2] = &icList[2];
-        ptrs[3] = &icList[3];
-        ptrs[4] = &icList[4];
-
-        arg_values[4] = &ptrs[0];
-        arg_values[5] = &ptrs[1];
-        arg_values[6] = &ptrs[2];
-        arg_values[7] = &ptrs[3];
-        arg_values[8] = &ptrs[4];
-
-        printf("4 - %p - %p\n", arg_values[4], ptrs[0]);
-        printf("5 - %p - %p\n", arg_values[5], ptrs[1]);
-        printf("6 - %p - %p\n", arg_values[6], ptrs[2]);
-        printf("7 - %p - %p\n", arg_values[7], ptrs[3]);
-        printf("8 - %p - %p\n", arg_values[8], ptrs[4]);
+        for (int i=0;i <numargs; i++) {
+            ptrs[i] = &icList[i];
+            arg_values[pad+i] = &ptrs[i];
+        }
 
         double z = 0;
-        //void ic_subcall ic_proto((LPSTR, LPLONG, LPLONG, LPLONG, ...));
-        ffi_call(&call_interface, FFI_FN(ic_subcall_stub), &z, arg_values);
-        //ic_subcall_stub(subname, &size,  &status, &numargs, ptrs[0], ptrs[1], ptrs[2], ptrs[3], ptrs[4]);
+        ffi_call(&call_interface, FFI_FN(ic_subcall), &z, arg_values);
         return z;
     }
     return -1;
@@ -145,7 +116,7 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     long code;
     ic_universe_session(server_name, user_name, password, account, &code, NULL);
 
-    int MAX_ARGS = (int)info.Length() -1;
+    int MAX_ARGS = info.Length() -1;
     ICSTRING icList[MAX_ARGS];
 
     if (code != 0) {
