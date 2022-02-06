@@ -9,7 +9,6 @@ var arg3 = "2";
 var arg4 = "3";
 var arg5 = "4";
 
-var subroutine = "WEB.GET.INVENTORY.MATRIX"
 var subroutine = "TEST.NIV"
 
 var result = universe.CallSubroutine(subroutine, arg1, arg2, arg3, arg4, arg5);
