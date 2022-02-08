@@ -21,17 +21,6 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
 
     ret_type = &ffi_type_double;
 
-    ffi_type icstring_type;
-    ffi_type *icstring_type_elements[3];
-
-    icstring_type.size = icstring_type.alignment = 0;
-    icstring_type.type = FFI_TYPE_STRUCT;
-    icstring_type.elements = icstring_type_elements;
-
-    icstring_type_elements[0] = &ffi_type_slong;
-    icstring_type_elements[1] = &ffi_type_pointer;
-    icstring_type_elements[2] = NULL;
-
     arg_types[0] = &ffi_type_pointer;
     arg_types[1] = &ffi_type_pointer;
     arg_types[2] = &ffi_type_pointer;
@@ -167,12 +156,10 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
         const char *x = (const char*)icList[i].text;
         Napi::String data = Napi::String::New(env,x);
         arguments[i] = data;
-    }
-
-    for (int i=0; i<MAX_ARGS; i++) {
         if (icList[i].len >0) {
             ic_free(icList[i].text);
         }
+
     }
 
     return arguments;

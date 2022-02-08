@@ -47,7 +47,7 @@ INCS_Debug := \
 	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/uv/include \
 	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/zlib \
 	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/v8/include \
-	-I/home/nivethan/universe/node_modules/node-addon-api
+	-I/home/nivethan/bp/universe/node_modules/node-addon-api
 
 DEFS_Release := \
 	'-DNODE_GYP_MODULE_NAME=universe-native' \
@@ -91,7 +91,7 @@ INCS_Release := \
 	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/uv/include \
 	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/zlib \
 	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/v8/include \
-	-I/home/nivethan/universe/node_modules/node-addon-api
+	-I/home/nivethan/bp/universe/node_modules/node-addon-api
 
 OBJS := \
 	$(obj).target/$(TARGET)/src/universe.o
