@@ -11,7 +11,7 @@
 
 using namespace Napi;
 
-double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
+long call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     int pad = 4;
     int arg_len = pad + numargs;
 
@@ -19,7 +19,7 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     ffi_type    *ret_type;
     ffi_type    *arg_types[arg_len];
 
-    ret_type = &ffi_type_double;
+    ret_type = &ffi_type_slong;
 
     arg_types[0] = &ffi_type_pointer;
     arg_types[1] = &ffi_type_pointer;
@@ -54,7 +54,7 @@ double call_subroutine(char *subname, long numargs, ICSTRING *icList) {
             arg_values[pad+i] = &ptrs[i];
         }
 
-        double z = 0;
+        long z = 0;
         ffi_call(&call_interface, FFI_FN(ic_subcall), &z, arg_values);
         return z;
     }
