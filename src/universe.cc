@@ -12,6 +12,7 @@
 
 using namespace Napi;
 
+// https://stackoverflow.com/questions/4059775/convert-iso-8859-1-strings-to-utf-8-in-c-c
 unsigned char* iso_8859_1_to_utf8(unsigned char *in) {
     long max = strlen((char*)in);
     unsigned char *out = new unsigned char[2*(max+1)];
@@ -32,6 +33,7 @@ unsigned char* iso_8859_1_to_utf8(unsigned char *in) {
     return out;
 }
 
+// https://stackoverflow.com/questions/23689733/convert-string-from-utf-8-to-iso-8859-1
 std::string UTF8toISO8859_1(const char * in) 
 {
     std::string out;
