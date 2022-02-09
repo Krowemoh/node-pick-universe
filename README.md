@@ -13,20 +13,9 @@ You'll most likely need to build this package from source.
 - libffi headers (libffi-devel on rhel or libffi-dev on ubuntu)
 - libuvic and intcall.h to use intercall (I've included these in the repo)
 
-There are two libraries that are needed, libuvic and libffi. libuvic is provided by Rocket and I've added that to the lib folder in this repo. libffi needs to be installed by your package manager and you can find it by doing the following:
+There are two libraries that are needed, libuvic and libffi. libuvic is provided by Rocket and I've added that to the lib folder in this repo.
 
-```
-❯ ldconfig  -p | grep ffi
-        libffi.so.6 (libc6,x86-64) => /lib64/libffi.so.6
-```
-
-Copy this path and update the binding.gyp file.
-
-```
-"libraries": [ "../lib/libuvic.a", "/lib64/libffi.so.6" ],
-```
-
-With that you should be able to now run the node-gyp command to build the addon.
+Once you have these things, you can then run the following command to build the addon.
 
 ```
 ❯ node-gyp configure build
