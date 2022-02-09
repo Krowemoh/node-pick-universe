@@ -6,10 +6,67 @@
 #include <string.h>
 #include <ctype.h>
 #include <ffi.h>
+#include <locale.h>
 
 #include "universe.h"
 
 using namespace Napi;
+
+unsigned char* iso_8859_1_to_utf8(unsigned char *in) {
+    long max = strlen((char*)in);
+    unsigned char *out = new unsigned char[2*(max+1)];
+
+    long i = 0;
+    while (*in) {
+        if (*in<128) {
+            out[i] = *in++;
+            i++;
+        } else {
+            out[i] = 0xc2 + (*in > 0xbf); 
+            i++;
+            out[i] = (*in++ & 0x3f) + 0x80;
+            i++;
+        }
+    }
+    out[i] = '\0';
+    return out;
+}
+
+std::string UTF8toISO8859_1(const char * in) 
+{
+    std::string out;
+    if (in == NULL)
+        return out;
+
+    unsigned int codepoint = 0;
+    while (*in != 0)
+    {
+        unsigned char ch = static_cast<unsigned char>(*in);
+        if (ch <= 0x7f)
+            codepoint = ch;
+        else if (ch <= 0xbf)
+            codepoint = (codepoint << 6) | (ch & 0x3f);
+        else if (ch <= 0xdf)
+            codepoint = ch & 0x1f;
+        else if (ch <= 0xef)
+            codepoint = ch & 0x0f;
+        else
+            codepoint = ch & 0x07;
+        ++in;
+        if (((*in & 0xc0) != 0x80) && (codepoint <= 0x10ffff))
+        {
+            if (codepoint <= 255)
+            {
+                out.append(1, static_cast<char>(codepoint));
+            }
+            else
+            {
+                // do whatever you want for out-of-bounds characters
+            }
+        }
+    }
+    return out;
+}
 
 long call_subroutine(char *subname, long numargs, ICSTRING *icList) {
     int pad = 4;
@@ -86,16 +143,8 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 }
 
 Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
     Napi::Env env = info.Env();
-
-    for (int i=0;i <(int)info.Length();i++) {
-        if (!info[i].IsString()) {
-            char error[100];
-            snprintf(error, 100, "Argument %d isn't a string.\n", i);
-            Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-            return env.Null();
-        }
-    }
 
     char *server_name = (char *)this->_host.c_str();
     char *user_name = (char *)this->_username.c_str();
@@ -116,7 +165,9 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
 
     } else {
         for (int i=0;i<MAX_ARGS;i++) {
-            std::string param = info[i+1].ToString().Utf8Value();
+            std::string pre_param = info[i+1].ToString().Utf8Value();
+            const char * c_param = pre_param.c_str();
+            std::string param = UTF8toISO8859_1(c_param);
 
             if (param == "") {
                 const char *text = "";
@@ -153,15 +204,18 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
 
     Napi::Array arguments = Napi::Array::New(env, info.Length()-1);
     for (int i=0;i<MAX_ARGS;i++) {
-        const char *x = (const char*)icList[i].text;
-        Napi::String data = Napi::String::New(env,x);
+        unsigned char *in = icList[i].text;
+        unsigned char *out = iso_8859_1_to_utf8(in);
+/*        for(int j=0;j<strlen((char*)out);j++) {
+            printf("%c: %d\n", out[j], out[j]);
+        }
+        */
+        Napi::String data = Napi::String::New(env, (char*)out);
         arguments[i] = data;
         if (icList[i].len >0) {
             ic_free(icList[i].text);
         }
-
     }
-
     return arguments;
 }
 
