@@ -206,10 +206,6 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     for (int i=0;i<MAX_ARGS;i++) {
         unsigned char *in = icList[i].text;
         unsigned char *out = iso_8859_1_to_utf8(in);
-/*        for(int j=0;j<strlen((char*)out);j++) {
-            printf("%c: %d\n", out[j], out[j]);
-        }
-        */
         Napi::String data = Napi::String::New(env, (char*)out);
         arguments[i] = data;
         if (icList[i].len >0) {

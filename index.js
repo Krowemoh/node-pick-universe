@@ -24,11 +24,9 @@ var arg5 = "4";
 var subroutine = "TEST.NIV"
 
 var result = universe.CallSubroutine(subroutine, ArrayToMV(arg1), arg2, arg3, arg4, arg5);
-console.log(result);
-for (var i=0;i<result[0].length;i++) {
-    console.log(result[0].charCodeAt(i));
-}
+console.log(result[0]);
 
 result = result.map(r => MVToArray(r));
 
 console.log(JSON.stringify(result[0]));
+console.log(ArrayToMV(result[0]));
