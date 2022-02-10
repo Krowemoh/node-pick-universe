@@ -13,21 +13,24 @@
 using namespace Napi;
 
 // https://stackoverflow.com/questions/4059775/convert-iso-8859-1-strings-to-utf-8-in-c-c
-unsigned char* iso_8859_1_to_utf8(unsigned char *in) {
-    long max = strlen((char*)in);
-    unsigned char *out = new unsigned char[2*(max+1)];
+unsigned char* iso_8859_1_to_utf8(unsigned char *in, long max) {
+    unsigned char *out = (unsigned char *) malloc(2*(max+1));
+
+    if (max == 0) {
+        out[0] = '\0';
+        return out;
+    }
 
     long i = 0;
-    while (*in) {
+    long j = 0;
+    while (j < max) {
         if (*in<128) {
-            out[i] = *in++;
-            i++;
+            out[i++] = *in++;
         } else {
-            out[i] = 0xc2 + (*in > 0xbf); 
-            i++;
-            out[i] = (*in++ & 0x3f) + 0x80;
-            i++;
+            out[i++] = 0xc2 + (*in > 0xbf); 
+            out[i++] = (*in++ & 0x3f) + 0x80;
         }
+        j++;
     }
     out[i] = '\0';
     return out;
@@ -196,20 +199,23 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
             fprintf(stderr, "Failed to close session. Code = %ld\n", code);
         }
 
-        if (sub_status != 0) {
-            char error[100];
-            snprintf(error, 100, "Failed to complete subroutine. Code = %ld\n", sub_status);
-            Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-            return env.Null();
+        if (false) {
+            if (sub_status != 0) {
+                char error[100];
+                snprintf(error, 100, "Failed to complete subroutine. Code = %ld\n", sub_status);
+                Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+                return env.Null();
+            }
         }
     }
 
     Napi::Array arguments = Napi::Array::New(env, info.Length()-1);
     for (int i=0;i<MAX_ARGS;i++) {
         unsigned char *in = icList[i].text;
-        unsigned char *out = iso_8859_1_to_utf8(in);
+        unsigned char *out = iso_8859_1_to_utf8(in, icList[i].len);
         Napi::String data = Napi::String::New(env, (char*)out);
         arguments[i] = data;
+        free(out);
         if (icList[i].len >0) {
             ic_free(icList[i].text);
         }
