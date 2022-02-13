@@ -40,13 +40,13 @@ CFLAGS_CC_Debug := \
 	-std=gnu++17
 
 INCS_Debug := \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/include/node \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/src \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/config \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/openssl/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/uv/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/zlib \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/v8/include \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/include/node \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/src \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/openssl/config \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/openssl/openssl/include \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/uv/include \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/zlib \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/v8/include \
 	-I/home/nivethan/bp/universe/node_modules/node-addon-api
 
 DEFS_Release := \
@@ -84,13 +84,13 @@ CFLAGS_CC_Release := \
 	-std=gnu++17
 
 INCS_Release := \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/include/node \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/src \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/config \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/openssl/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/uv/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/zlib \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/v8/include \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/include/node \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/src \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/openssl/config \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/openssl/openssl/include \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/uv/include \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/zlib \
+	-I/home/nivethan/.cache/node-gyp/17.3.1/deps/v8/include \
 	-I/home/nivethan/bp/universe/node_modules/node-addon-api
 
 OBJS := \

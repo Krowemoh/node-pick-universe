@@ -37,15 +37,13 @@ unsigned char* iso_8859_1_to_utf8(unsigned char *in, long max) {
 }
 
 // https://stackoverflow.com/questions/23689733/convert-string-from-utf-8-to-iso-8859-1
-std::string UTF8toISO8859_1(const char * in) 
-{
+std::string UTF8toISO8859_1(const char * in) {
     std::string out;
     if (in == NULL)
         return out;
 
     unsigned int codepoint = 0;
-    while (*in != 0)
-    {
+    while (*in != 0) {
         unsigned char ch = static_cast<unsigned char>(*in);
         if (ch <= 0x7f)
             codepoint = ch;
