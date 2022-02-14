@@ -20,4 +20,5 @@ class Universe : public Napi::ObjectWrap<Universe>
         std::string _username;
         std::string _password;
         std::string _account;
+        long _session_id;
 };

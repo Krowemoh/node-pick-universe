@@ -237,6 +237,14 @@ Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
 }
 
 Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     return ReadBase(info, IK_DATA);
 }
 
@@ -248,7 +256,9 @@ Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
 
     long code;
 
-    ic_universe_session(server_name, user_name, password, account, &code, NULL);
+    long session_id = ic_universe_session(server_name, user_name, password, account, &code, NULL);
+
+    this->_session_id = session_id;
 
     if (code != 0) {
         char error[100];
@@ -261,6 +271,14 @@ Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     long code;
     ic_quit(&code);
     if (code != 0) {
@@ -270,6 +288,7 @@ Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
+    this->_session_id = 0;
     return info.Env().Null();
 }
 
@@ -295,6 +314,7 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     this->_username = info[1].As<Napi::String>().Utf8Value();
     this->_password = info[2].As<Napi::String>().Utf8Value();
     this->_account = info[3].As<Napi::String>().Utf8Value();
+    this->_session_id = 0;
 }
 
 Napi::Function Universe::GetClass(Napi::Env env) {
