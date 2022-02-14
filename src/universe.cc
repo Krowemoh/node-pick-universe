@@ -125,61 +125,40 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
     Napi::Env env = info.Env();
 
-    char *server_name = (char *)this->_host.c_str();
-    char *user_name = (char *)this->_username.c_str();
-    char *password = (char *)this->_password.c_str();
-    char *account = (char *)this->_account.c_str();
-
-    long code;
-    ic_universe_session(server_name, user_name, password, account, &code, NULL);
-
     int MAX_ARGS = info.Length() -1;
     ICSTRING icList[MAX_ARGS];
 
-    if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to open session. Code = %ld\n", code);
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-        return env.Null();
+    for (int i=0;i<MAX_ARGS;i++) {
+        std::string pre_param = info[i+1].ToString().Utf8Value();
+        const char * c_param = pre_param.c_str();
+        std::string param = UTF8toISO8859_1(c_param);
 
-    } else {
-        for (int i=0;i<MAX_ARGS;i++) {
-            std::string pre_param = info[i+1].ToString().Utf8Value();
-            const char * c_param = pre_param.c_str();
-            std::string param = UTF8toISO8859_1(c_param);
-
-            if (param == "") {
-                const char *text = "";
-                long size = strlen(text);
-                icList[i].len = size;
-                icList[i].text = (unsigned char*)ic_calloc(&size);
-                memcpy(icList[i].text, text, icList[i].len);
-            } else {
-                char *text = (char *)param.c_str();
-                long size = strlen(text);
-                icList[i].len = size;
-                icList[i].text = (unsigned char*)ic_calloc(&size);
-                memcpy(icList[i].text, text, icList[i].len);
-            }
+        if (param == "") {
+            const char *text = "";
+            long size = strlen(text);
+            icList[i].len = size;
+            icList[i].text = (unsigned char*)ic_calloc(&size);
+            memcpy(icList[i].text, text, icList[i].len);
+        } else {
+            char *text = (char *)param.c_str();
+            long size = strlen(text);
+            icList[i].len = size;
+            icList[i].text = (unsigned char*)ic_calloc(&size);
+            memcpy(icList[i].text, text, icList[i].len);
         }
+    }
 
-        std::string name = info[0].ToString().Utf8Value();
-        char *subname = (char *)name.c_str();
+    std::string name = info[0].ToString().Utf8Value();
+    char *subname = (char *)name.c_str();
 
-        long sub_status = call_subroutine(subname, MAX_ARGS, icList);
+    long sub_status = call_subroutine(subname, MAX_ARGS, icList);
 
-        ic_quit(&code);
-        if (code != 0) {
-            fprintf(stderr, "Failed to close session. Code = %ld\n", code);
-        }
-
-        if (false) {
-            if (sub_status != 0) {
-                char error[100];
-                snprintf(error, 100, "Failed to complete subroutine. Code = %ld\n", sub_status);
-                Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-                return env.Null();
-            }
+    if (false) {
+        if (sub_status != 0) {
+            char error[100];
+            snprintf(error, 100, "Failed to complete subroutine. Code = %ld\n", sub_status);
+            Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+            return env.Null();
         }
     }
 
@@ -197,7 +176,7 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     return arguments;
 }
 
-Napi::Value Universe::start_session(const Napi::CallbackInfo& info) {
+Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
     char *server_name = (char *)this->_host.c_str();
     char *user_name = (char *)this->_username.c_str();
     char *password = (char *)this->_password.c_str();
@@ -210,6 +189,19 @@ Napi::Value Universe::start_session(const Napi::CallbackInfo& info) {
     if (code != 0) {
         char error[100];
         snprintf(error, 100, "Failed to open session. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    return info.Env().Null();
+}
+
+Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
+    long code;
+    ic_quit(&code);
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to close session. Code = %ld\n", code);
         Napi::Env env = info.Env();
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
@@ -272,18 +264,12 @@ Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
 
     ic_close(&file_id, &code);
 
-    ic_quit(&code);
-    if (code != 0) {
-        fprintf(stderr, "Failed to close session. Code = %ld\n", code);
-    }
-
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);
     return data;
 }
 
 Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
-    Universe::start_session(info);
     return ReadBase(info, IK_DATA);
 }
 
@@ -315,6 +301,8 @@ Napi::Function Universe::GetClass(Napi::Env env) {
     return DefineClass(env, "Universe", {
             Universe::InstanceMethod("CallSubroutine", &Universe::CallSubroutine),
             Universe::InstanceMethod("Read", &Universe::Read),
+            Universe::InstanceMethod("StartSession", &Universe::StartSession),
+            Universe::InstanceMethod("EndSession", &Universe::EndSession),
             });
 }
 

@@ -6,7 +6,8 @@ class Universe : public Napi::ObjectWrap<Universe>
 {
     public:
         Universe(const Napi::CallbackInfo&);
-        Napi::Value start_session(const Napi::CallbackInfo&);
+        Napi::Value StartSession(const Napi::CallbackInfo&);
+        Napi::Value EndSession(const Napi::CallbackInfo&);
 
         Napi::Value CallSubroutine(const Napi::CallbackInfo&);
 
