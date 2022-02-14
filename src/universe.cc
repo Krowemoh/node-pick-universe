@@ -176,39 +176,6 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     return arguments;
 }
 
-Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
-    char *server_name = (char *)this->_host.c_str();
-    char *user_name = (char *)this->_username.c_str();
-    char *password = (char *)this->_password.c_str();
-    char *account = (char *)this->_account.c_str();
-
-    long code;
-
-    ic_universe_session(server_name, user_name, password, account, &code, NULL);
-
-    if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to open session. Code = %ld\n", code);
-        Napi::Env env = info.Env();
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    return info.Env().Null();
-}
-
-Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
-    long code;
-    ic_quit(&code);
-    if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to close session. Code = %ld\n", code);
-        Napi::Env env = info.Env();
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-        return env.Null();
-    }
-    return info.Env().Null();
-}
-
 Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -271,6 +238,39 @@ Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
 
 Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     return ReadBase(info, IK_DATA);
+}
+
+Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
+    char *server_name = (char *)this->_host.c_str();
+    char *user_name = (char *)this->_username.c_str();
+    char *password = (char *)this->_password.c_str();
+    char *account = (char *)this->_account.c_str();
+
+    long code;
+
+    ic_universe_session(server_name, user_name, password, account, &code, NULL);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to open session. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    return info.Env().Null();
+}
+
+Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
+    long code;
+    ic_quit(&code);
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to close session. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    return info.Env().Null();
 }
 
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
