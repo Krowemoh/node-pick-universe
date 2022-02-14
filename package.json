@@ -2,7 +2,8 @@
   "main": "lib/binding.js",
   "dependencies": {
     "dotenv": "^16.0.0",
-    "node-addon-api": "^1.1.0"
+    "node-addon-api": "^1.1.0",
+    "pick-mv": "^1.0.1"
   },
   "scripts": {
     "test": "node --napi-modules ./test/test_binding.js"

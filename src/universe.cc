@@ -197,84 +197,94 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     return arguments;
 }
 
-Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
-    setlocale(LC_ALL, "en_US.iso88591");
-    Napi::Env env = info.Env();
-
+Napi::Value Universe::start_session(const Napi::CallbackInfo& info) {
     char *server_name = (char *)this->_host.c_str();
     char *user_name = (char *)this->_username.c_str();
     char *password = (char *)this->_password.c_str();
     char *account = (char *)this->_account.c_str();
 
-    long file_id;
-    unsigned char *out;
     long code;
+
     ic_universe_session(server_name, user_name, password, account, &code, NULL);
 
     if (code != 0) {
         char error[100];
         snprintf(error, 100, "Failed to open session. Code = %ld\n", code);
+        Napi::Env env = info.Env();
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
+    }
+    return info.Env().Null();
+}
 
-    } else {
-        std::string filename_string = info[1].ToString().Utf8Value();
-        const char *filename = filename_string.c_str();
+Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
+    setlocale(LC_ALL, "en_US.iso88591");
 
-        long dict_flag = IK_DATA;
-        long file_len = strlen(filename);
-        long status_func;
+    Napi::Env env = info.Env();
+    long file_id;
+    unsigned char *out;
+    long code;
 
-        ic_open(&file_id, &dict_flag, (char *)filename, &file_len, &status_func, &code);
+    std::string filename_string = info[1].ToString().Utf8Value();
+    const char *filename = filename_string.c_str();
 
-        long lock = IK_READ;
+    long file_len = strlen(filename);
+    long status_func;
 
-        std::string record_id_string = info[0].ToString().Utf8Value();
-        const char *record_id = record_id_string.c_str();
-        long id_len = strlen(record_id);
-        long max_rec_size = 300;
+    ic_open(&file_id, &universe_file_type, (char *)filename, &file_len, &status_func, &code);
 
-        char* record = (char*)malloc(max_rec_size * sizeof(char));
-        long record_len = 0;
+    long lock = IK_READ;
 
-        do {
-            ic_read(&file_id, &lock, (char*)record_id, &id_len, record, &max_rec_size, &record_len, &status_func, &code);
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+    long max_rec_size = 300;
 
-            if (code == IE_BTS) {
-                free(record);
-                max_rec_size = max_rec_size * 2;
-                record = (char*)malloc(max_rec_size * sizeof(char));
+    char* record = (char*)malloc(max_rec_size * sizeof(char));
+    long record_len = 0;
 
-           } else if (status_func != 0) {
-                free(record);
-                char error[100];
-                snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
-                Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-                return env.Null();
+    do {
+        ic_read(&file_id, &lock, (char*)record_id, &id_len, record, &max_rec_size, &record_len, &status_func, &code);
 
-            } else if (record_len == 0) {
-                free(record);
-                char error[100];
-                snprintf(error, 100, "Record does not exist. Record: %s\n", record_id);
-                Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-                return env.Null();
-            }
-        } while (code == IE_BTS);
+        if (code == IE_BTS) {
+            free(record);
+            max_rec_size = max_rec_size * 2;
+            record = (char*)malloc(max_rec_size * sizeof(char));
 
-        out = iso_8859_1_to_utf8((unsigned char*)record, max_rec_size);
-        free(record);
+        } else if (status_func != 0) {
+            free(record);
+            char error[100];
+            snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+            Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+            return env.Null();
 
-        ic_close(&file_id, &code);
-
-        ic_quit(&code);
-        if (code != 0) {
-            fprintf(stderr, "Failed to close session. Code = %ld\n", code);
+        } else if (record_len == 0) {
+            free(record);
+            char error[100];
+            snprintf(error, 100, "Record does not exist. Record: %s\n", record_id);
+            Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+            return env.Null();
         }
+    } while (code == IE_BTS);
+
+    out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
+    free(record);
+
+    ic_close(&file_id, &code);
+
+    ic_quit(&code);
+    if (code != 0) {
+        fprintf(stderr, "Failed to close session. Code = %ld\n", code);
     }
 
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);
     return data;
+}
+
+Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
+    Universe::start_session(info);
+    return ReadBase(info, IK_DATA);
 }
 
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
