@@ -176,6 +176,60 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     return arguments;
 }
 
+Napi::Value Universe::Data(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string pre_param = info[0].ToString().Utf8Value();
+    const char * c_param = pre_param.c_str();
+    std::string param = UTF8toISO8859_1(c_param);
+
+    const char* data = param.c_str();
+
+    long data_len = strlen(data);
+
+    long code;
+    ic_data((char*)data, &data_len, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in adding input. Code (%ld)\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
+Napi::Value Universe::ClearData(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long code;
+    ic_cleardata(&code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in adding input. Code (%ld)\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
 Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -281,8 +335,6 @@ Napi::Value Universe::Write(const Napi::CallbackInfo& info) {
     return WriteBase(info, lock_type);
 }
 
-
-
 Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -363,6 +415,35 @@ Napi::Value Universe::Select(const Napi::CallbackInfo& info) {
     return env.Null();
 }
 
+Napi::Value Universe::ClearSelect(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long code;
+
+    long list_number = 0;
+    if(info.Length() > 0) {
+        list_number = info[0].As<Napi::Number>().Uint32Value();
+    }
+
+    ic_clearselect(&list_number, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in clearing select file. Code (%ld)\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
 Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -412,10 +493,41 @@ Napi::Value Universe::Close(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    long file_id = info[1].As<Napi::Number>().Uint32Value();
+    long file_id = info[0].As<Napi::Number>().Uint32Value();
     long code;
 
     ic_close(&file_id, &code);
+
+    return env.Null();
+}
+
+Napi::Value Universe::ClearFile(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long file_id = info[0].As<Napi::Number>().Uint32Value();
+    long code;
+
+    ic_clearfile(&file_id, &code);
+
+    if (code == IE_ENOENT) {
+        char error[100];
+        snprintf(error, 100, "No such file or directory to clear. Code (%ld).", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+
+    } else if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in clearing file. Code (%ld)\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
 
     return env.Null();
 }
@@ -492,14 +604,18 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 Napi::Function Universe::GetClass(Napi::Env env) {
     return DefineClass(env, "Universe", {
             Universe::InstanceMethod("CallSubroutine", &Universe::CallSubroutine),
+            Universe::InstanceMethod("Data", &Universe::Data),
+            Universe::InstanceMethod("ClearData", &Universe::ClearData),
 
             Universe::InstanceMethod("StartSession", &Universe::StartSession),
             Universe::InstanceMethod("EndSession", &Universe::EndSession),
 
             Universe::InstanceMethod("Open", &Universe::Open),
             Universe::InstanceMethod("Close", &Universe::Close),
+            Universe::InstanceMethod("ClearFile", &Universe::ClearFile),
 
             Universe::InstanceMethod("Select", &Universe::Select),
+            Universe::InstanceMethod("ClearSelect", &Universe::ClearSelect),
             Universe::InstanceMethod("ReadNext", &Universe::ReadNext),
             Universe::InstanceMethod("Read", &Universe::Read),
             Universe::InstanceMethod("Write", &Universe::Write),
