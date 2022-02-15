@@ -75,6 +75,23 @@ This function will close and release any locks associated with the file handler.
 universe.Close(INVENTORY_FILE);
 ```
 
+### Select
+
+Select requires a file id to select, and it takes in a list number so you can save things to different lists.
+
+```
+universe.Select(FILE_IDENTIFIER_FILE);
+// universe.Select(FILE_IDENTIFIER_FILE, 2);
+```
+
+### ReadNext
+
+ReadNext will by default read in the 0th list but passing in a number will use that list if it exists. A null is returned when the list empty.
+
+```
+    record = universe.ReadNext();
+```
+
 ### Read
 
 Read in an entire record by giving an ID and a file handler.
@@ -82,3 +99,5 @@ Read in an entire record by giving an ID and a file handler.
 ```
 const x = universe.Read("ITEM.ID", INVENTORY_FILE);
 ```
+
+

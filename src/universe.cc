@@ -217,8 +217,7 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return env.Null();
 
-        } else if (record_len == 0) {
-            free(record);
+        } else if (record == NULL && record_len == 0) {
             char error[100];
             snprintf(error, 100, "Record does not exist. Record: %s\n", record_id);
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
@@ -229,10 +228,89 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     unsigned char * out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
     free(record);
 
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
+Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long list_number = 0;
+    if(info.Length() > 0) {
+        list_number = info[0].As<Napi::Number>().Uint32Value();
+    }
+
+    long code;
+    long max_id_size = 300;
+    char* record_id = (char*)malloc(max_id_size * sizeof(char));
+    long id_len = 0;
+
+    do {
+        ic_readnext(&list_number, record_id, &max_id_size, &id_len, &code);
+
+        if (code == IE_BTS) {
+            free(record_id);
+            max_id_size = max_id_size * 2;
+            record_id = (char*)malloc(max_id_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+
+    if (code == IE_LRR) {
+        free(record_id);
+        return env.Null();
+
+    } else if (code != 0) {
+        free(record_id);
+        char error[100];
+        snprintf(error, 100, "Select failed. Code = %ld.\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)record_id, id_len);
+    free(record_id);
 
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);
     return data;
+}
+
+Napi::Value Universe::Select(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long file_id = info[0].As<Napi::Number>().Uint32Value();
+
+    long list_number = 0;
+    if(info.Length() > 1) {
+        list_number = info[1].As<Napi::Number>().Uint32Value();
+    }
+
+    long code;
+    ic_select(&file_id, &list_number, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Select failed. Code = %ld.\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    return env.Null();
 }
 
 Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
@@ -364,10 +442,15 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 Napi::Function Universe::GetClass(Napi::Env env) {
     return DefineClass(env, "Universe", {
             Universe::InstanceMethod("CallSubroutine", &Universe::CallSubroutine),
+
             Universe::InstanceMethod("StartSession", &Universe::StartSession),
             Universe::InstanceMethod("EndSession", &Universe::EndSession),
+
             Universe::InstanceMethod("Open", &Universe::Open),
             Universe::InstanceMethod("Close", &Universe::Close),
+
+            Universe::InstanceMethod("Select", &Universe::Select),
+            Universe::InstanceMethod("ReadNext", &Universe::ReadNext),
             Universe::InstanceMethod("Read", &Universe::Read),
             });
 }
