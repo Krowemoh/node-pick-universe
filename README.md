@@ -104,4 +104,14 @@ Read in an entire record by giving an ID and a file handler.
 const x = universe.Read("ITEM.ID", INVENTORY_FILE);
 ```
 
+### Write
+
+Write a record to universe, this is a string with the control characters. I wrote the pick-mv library to help manipulate multivalue in javascript.
+
+```
+const mv = require("pick-mv");
+var arg = ["0", "1"];
+universe.Write(mv.ArrayToMV(arg), CONTROL_FILE, "NIVETHAN");
+```
+
 

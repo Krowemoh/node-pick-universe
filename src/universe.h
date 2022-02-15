@@ -17,6 +17,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value Select(const Napi::CallbackInfo&);
         Napi::Value ReadNext(const Napi::CallbackInfo&);
         Napi::Value Read(const Napi::CallbackInfo&);
+        Napi::Value Write(const Napi::CallbackInfo&);
 
         static Napi::Function GetClass(Napi::Env);
 
