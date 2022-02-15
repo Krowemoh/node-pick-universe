@@ -38,3 +38,47 @@ ARG3 = "TWO"
 ARG4 = "THREE"
 ARG5 = "FOUR"
 ```
+
+## API
+
+This is straightforward translation of how the intercall library works.
+
+### StartSession
+
+This function will start a universe session, if it can't, it will throw an error. The session id can be used in SetSession to change which session is currently active.
+
+```
+const session_id = universe.StartSession();
+```
+
+### EndSession
+
+This will close the current session and release any locks that are active.
+
+```
+universe.EndSession();
+```
+
+### Open
+
+This will return a file handler if the file exists, otherwise it will throw an error.
+
+```
+const INVENTORY_FILE = universe.Open("INVENTORY-FILE");
+```
+
+### Close
+
+This function will close and release any locks associated with the file handler.
+
+```
+universe.Close(INVENTORY_FILE);
+```
+
+### Read
+
+Read in an entire record by giving an ID and a file handler.
+
+```
+const x = universe.Read("ITEM.ID", INVENTORY_FILE);
+```

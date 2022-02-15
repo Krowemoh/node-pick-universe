@@ -176,23 +176,23 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     return arguments;
 }
 
-Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
+Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
     Napi::Env env = info.Env();
-    long file_id;
-    unsigned char *out;
-    long code;
 
-    std::string filename_string = info[1].ToString().Utf8Value();
-    const char *filename = filename_string.c_str();
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
 
-    long file_len = strlen(filename);
-    long status_func;
-
-    ic_open(&file_id, &universe_file_type, (char *)filename, &file_len, &status_func, &code);
+    long file_id = info[1].As<Napi::Number>().Uint32Value();
 
     long lock = IK_READ;
+    long status_func;
+    long code;
 
     std::string record_id_string = info[0].ToString().Utf8Value();
     const char *record_id = record_id_string.c_str();
@@ -226,26 +226,70 @@ Napi::Value ReadBase(const Napi::CallbackInfo& info, long universe_file_type) {
         }
     } while (code == IE_BTS);
 
-    out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
     free(record);
 
-    ic_close(&file_id, &code);
 
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);
     return data;
 }
 
-Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
+Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
     if (this->_session_id == 0) {
-        Napi::Env env = info.Env();
         char error[100];
         snprintf(error, 100, "Session has not been started.\n");
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    return ReadBase(info, IK_DATA);
+    long file_id;
+    long code;
+
+    std::string filename_string = info[0].ToString().Utf8Value();
+    const char *filename = filename_string.c_str();
+
+    long file_len = strlen(filename);
+    long status_func;
+    long universe_file_type = IK_DATA;
+
+    ic_open(&file_id, &universe_file_type, (char *)filename, &file_len, &status_func, &code);
+
+    if (code == IE_ENOENT) {
+        char error[100];
+        snprintf(error, 100, "No such file or directory (%ld). Filename: %s\n", code, filename);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+
+    } else if (code != 0 || file_id == 0 || status_func <= 0) {
+        char error[100];
+        snprintf(error, 100, "Error in opening file code (%ld), status (%ld). Filename: %s\n", code, status_func, filename);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Number data = Napi::Number::New(env, file_id);
+    return data;
+}
+
+Napi::Value Universe::Close(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long file_id = info[1].As<Napi::Number>().Uint32Value();
+    long code;
+
+    ic_close(&file_id, &code);
+
+    return env.Null();
 }
 
 Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
@@ -320,9 +364,11 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 Napi::Function Universe::GetClass(Napi::Env env) {
     return DefineClass(env, "Universe", {
             Universe::InstanceMethod("CallSubroutine", &Universe::CallSubroutine),
-            Universe::InstanceMethod("Read", &Universe::Read),
             Universe::InstanceMethod("StartSession", &Universe::StartSession),
             Universe::InstanceMethod("EndSession", &Universe::EndSession),
+            Universe::InstanceMethod("Open", &Universe::Open),
+            Universe::InstanceMethod("Close", &Universe::Close),
+            Universe::InstanceMethod("Read", &Universe::Read),
             });
 }
 
