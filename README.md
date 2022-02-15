@@ -8,6 +8,7 @@ You'll most likely need to build this package from source.
 
 
 ### Requirements
+
 - a compiler that can compile C++17. (Which on rhel 7 was a bit of a pain to set up.)
 - node-gyp 
 - libffi headers (libffi-devel on rhel or libffi-dev on ubuntu)
@@ -15,10 +16,13 @@ You'll most likely need to build this package from source.
 
 There are two libraries that are needed, libuvic and libffi. libuvic is provided by Rocket and I've added that to the lib folder in this repo.
 
-Once you have these things, you can then run the following command to build the addon.
+Once you have these things, you can then run the following commands to build the addon.
 
 ```
-❯ node-gyp configure build
+> git clone git@github.com:Krowemoh/node-pick-universe.git
+> cd node-pick-universe
+> npm install
+> node-gyp configure build
 ```
 
 Good luck!
@@ -89,7 +93,7 @@ universe.Select(FILE_IDENTIFIER_FILE);
 ReadNext will by default read in the 0th list but passing in a number will use that list if it exists. A null is returned when the list empty.
 
 ```
-    record = universe.ReadNext();
+let record = universe.ReadNext();
 ```
 
 ### Read
