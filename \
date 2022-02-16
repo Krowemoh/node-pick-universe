@@ -665,7 +665,7 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
 
     long command_len = strlen(command);
 
-    long buffer_len = 5000;
+    long buffer_len = 6000;
     char buffer[buffer_len];
 
     long text_len;
@@ -678,13 +678,15 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
     long real_size = text_len;
     std::string text;
     text.append(buffer);
+    printf("DONE Code: %ld, R1: %ld, R2: %ld\n", code, r1, r2);
 
     if (code == IE_BTS) {
         do {
-
-            ic_executecontinue(buffer, &buffer_len, &text_len, &r1, &r2, &code);
-            text.append(buffer, 0, text_len);
+            char b[buffer_len];
+            ic_executecontinue(b, &buffer_len, &text_len, &r1, &r2, &code);
+            text.append(b);
             real_size += text_len;
+            printf("DONE Code: %ld, R1: %ld, R2: %ld\n", code, r1, r2);
         } while (code == IE_BTS);
     } 
 
@@ -695,9 +697,10 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    unsigned char *out = iso_8859_1_to_utf8((unsigned char*)text.c_str(), text.length());
+    unsigned char *out = iso_8859_1_to_utf8((unsigned char*)text.c_str(), real_size);
     Napi::String output = Napi::String::New(env, (char*)out);
-
+            printf("%s\n", text);
+            printf("Real Size: %ld\n", real_size);
     free(out);
     return output;
 }

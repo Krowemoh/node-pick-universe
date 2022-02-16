@@ -27,6 +27,8 @@ class Universe : public Napi::ObjectWrap<Universe>
 
         Napi::Value Date(const Napi::CallbackInfo&);
 
+        Napi::Value Execute(const Napi::CallbackInfo&);
+
         static Napi::Function GetClass(Napi::Env);
 
     private:
