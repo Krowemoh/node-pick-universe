@@ -26,6 +26,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value Delete(const Napi::CallbackInfo&);
 
         Napi::Value Date(const Napi::CallbackInfo&);
+        Napi::Value IsAlpha(const Napi::CallbackInfo&);
 
         Napi::Value Execute(const Napi::CallbackInfo&);
         Napi::Value ContinueExecution(const Napi::CallbackInfo&);
