@@ -292,11 +292,11 @@ Napi::Value WriteBase(const Napi::CallbackInfo& info, long lock_type) {
 
     Napi::Env env = info.Env();
 
-    std::string record_id_string = info[2].ToString().Utf8Value();
+    std::string record_id_string = info[1].ToString().Utf8Value();
     const char *record_id = record_id_string.c_str();
     long id_len = strlen(record_id);
 
-    long file_id = info[1].As<Napi::Number>().Uint32Value();
+    long file_id = info[2].As<Napi::Number>().Uint32Value();
 
     std::string record_string = info[0].ToString().Utf8Value();
     std::string param = UTF8toISO8859_1(record_string.c_str());
@@ -309,7 +309,12 @@ Napi::Value WriteBase(const Napi::CallbackInfo& info, long lock_type) {
 
     ic_write(&file_id, &lock_type, (char*)record_id, &id_len, (char*)record, &record_len, &status_func, &code);
 
-    if (code != 0) {
+    if (code == IE_LCK) {
+        char error[100];
+        snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    } else if (code != 0) {
         char error[100];
         snprintf(error, 100, "Error in writing record. Code (%ld), Status (%ld). Record: %s\n", code, status_func, record_id);
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
@@ -331,8 +336,57 @@ Napi::Value Universe::Write(const Napi::CallbackInfo& info) {
         return env.Null();
     }
 
-    long lock_type = IK_WRITEU;
+    long lock_type = IK_WRITE;
     return WriteBase(info, lock_type);
+}
+
+Napi::Value DeleteBase(const Napi::CallbackInfo& info, long lock_type) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    long file_id = info[1].As<Napi::Number>().Uint32Value();
+
+    long status_func;
+    long code;
+
+    ic_delete(&file_id, &lock_type, (char*)record_id, &id_len, &status_func, &code);
+
+    if (code == IE_RNF) {
+        char error[100];
+        snprintf(error, 100, "Record not found. Record: %s\n",  record_id);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    } else if (code == IE_LCK) {
+        char error[100];
+        snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    } else if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in deleting record. Code (%ld), Status (%ld). Record: %s\n", code, status_func, record_id);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return info.Env().Null();
+}
+
+Napi::Value Universe::Delete(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long lock_type = IK_DELETE;
+    return DeleteBase(info, lock_type);
 }
 
 Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
@@ -576,6 +630,30 @@ Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
     return info.Env().Null();
 }
 
+Napi::Value Universe::Date(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long date;
+    long code;
+    ic_date(&date, &code);
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to get date. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    
+    Napi::Env env = info.Env();
+    return Napi::Number::New(env, date);
+}
+
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
 
@@ -617,8 +695,12 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("Select", &Universe::Select),
             Universe::InstanceMethod("ClearSelect", &Universe::ClearSelect),
             Universe::InstanceMethod("ReadNext", &Universe::ReadNext),
+
             Universe::InstanceMethod("Read", &Universe::Read),
             Universe::InstanceMethod("Write", &Universe::Write),
+            Universe::InstanceMethod("Delete", &Universe::Delete),
+
+            Universe::InstanceMethod("Date", &Universe::Date),
             });
 }
 
