@@ -251,7 +251,7 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     std::string record_id_string = info[0].ToString().Utf8Value();
     const char *record_id = record_id_string.c_str();
     long id_len = strlen(record_id);
-    long max_rec_size = 300;
+    long max_rec_size = 500;
 
     char* record = (char*)malloc(max_rec_size * sizeof(char));
     long record_len = 0;
