@@ -20,6 +20,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value Select(const Napi::CallbackInfo&);
         Napi::Value ClearSelect(const Napi::CallbackInfo&);
         Napi::Value ReadNext(const Napi::CallbackInfo&);
+        Napi::Value FormList(const Napi::CallbackInfo&);
         
         Napi::Value Read(const Napi::CallbackInfo&);
         Napi::Value Write(const Napi::CallbackInfo&);
@@ -27,9 +28,15 @@ class Universe : public Napi::ObjectWrap<Universe>
 
         Napi::Value Date(const Napi::CallbackInfo&);
         Napi::Value IsAlpha(const Napi::CallbackInfo&);
+        Napi::Value Format(const Napi::CallbackInfo&);
+        Napi::Value Extract(const Napi::CallbackInfo&);
 
         Napi::Value Execute(const Napi::CallbackInfo&);
         Napi::Value ContinueExecution(const Napi::CallbackInfo&);
+
+        Napi::Value FileInfo(const Napi::CallbackInfo&);
+        Napi::Value FileLock(const Napi::CallbackInfo&);
+        Napi::Value FileUnlock(const Napi::CallbackInfo&);
 
         static Napi::Function GetClass(Napi::Env);
 

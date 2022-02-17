@@ -34,7 +34,7 @@ var universe = new Universe.Universe(process.env.U_HOST, process.env.U_USERNAME,
 
 universe.StartSession();
 
-var arg1 = ["0", "1"];
+var arg1 = ["0", ["1", ["2", "3"]]];
 var arg2 = "1";
 var arg3 = "2";
 var arg4 = "3";
@@ -46,7 +46,7 @@ var result = universe.CallSubroutine(subroutine, ArrayToMV(arg1), arg2, arg3, ar
 
 universe.EndSession();
 
-console.log(result[0]);
+console.log(ArrayToMV(arg1));
 
 result = result.map(r => MVToArray(r));
 
