@@ -2061,6 +2061,51 @@ Napi::Value Universe::SetTimeout(const Napi::CallbackInfo& info) {
     return env.Null();
 }
 
+Napi::Value Universe::SessionInfo(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long key = info[0].As<Napi::Number>().Uint32Value();
+
+    long max_buffer_size = 500;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = 0;
+
+    long code;
+
+    do {
+        ic_session_info(&key, buffer, &max_buffer_size, &buffer_len, &code);
+
+        if (code == IE_BTS) {
+            free(buffer);
+            max_buffer_size = max_buffer_size * 2;
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in getting session info. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
 
@@ -2152,6 +2197,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("Release", &Universe::Release),
 
             Universe::InstanceMethod("SetTimeout", &Universe::SetTimeout),
+            Universe::InstanceMethod("SessionInfo", &Universe::SessionInfo),
     });
 }
 

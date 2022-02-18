@@ -70,6 +70,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value Release(const Napi::CallbackInfo&);
 
         Napi::Value SetTimeout(const Napi::CallbackInfo&);
+        Napi::Value SessionInfo(const Napi::CallbackInfo&);
 
         static Napi::Function GetClass(Napi::Env);
 
