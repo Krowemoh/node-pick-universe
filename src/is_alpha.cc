@@ -1,13 +1,7 @@
-#include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include "intcall.h"
 #include <string.h>
-#include <ctype.h>
-#include <ffi.h>
-#include <locale.h>
 
+#include "intcall.h"
 #include "convert.h"
 #include "universe.h"
 

@@ -319,7 +319,7 @@ endif
 
 quiet_cmd_regen_makefile = ACTION Regenerating $@
 cmd_regen_makefile = cd $(srcdir); /home/nivethan/.local/share/nvm/v17.3.1/lib/node_modules/node-gyp/gyp/gyp_main.py -fmake --ignore-environment "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/home/nivethan/.cache/node-gyp/17.3.1" "-Dnode_gyp_dir=/home/nivethan/.local/share/nvm/v17.3.1/lib/node_modules/node-gyp" "-Dnode_lib_file=/home/nivethan/.cache/node-gyp/17.3.1/<(target_arch)/node.lib" "-Dmodule_root_dir=/home/nivethan/bp/universe" "-Dnode_engine=v8" "--depth=." "-Goutput_dir=." "--generator-output=build" -I/home/nivethan/bp/universe/build/config.gypi -I/home/nivethan/.local/share/nvm/v17.3.1/lib/node_modules/node-gyp/addon.gypi -I/home/nivethan/.cache/node-gyp/17.3.1/include/node/common.gypi "--toplevel-dir=." binding.gyp
-Makefile: $(srcdir)/node_modules/node-addon-api/src/node_api.gyp $(srcdir)/binding.gyp $(srcdir)/../../.cache/node-gyp/17.3.1/include/node/common.gypi $(srcdir)/build/config.gypi $(srcdir)/../../.local/share/nvm/v17.3.1/lib/node_modules/node-gyp/addon.gypi
+Makefile: $(srcdir)/../../.cache/node-gyp/17.3.1/include/node/common.gypi $(srcdir)/binding.gyp $(srcdir)/../../.local/share/nvm/v17.3.1/lib/node_modules/node-gyp/addon.gypi $(srcdir)/build/config.gypi $(srcdir)/node_modules/node-addon-api/src/node_api.gyp
 	$(call do_cmd,regen_makefile)
 
 # "all" is a concatenation of the "all" targets from all the included
