@@ -5,8 +5,6 @@
 #include "convert.h"
 #include "universe.h"
 
-using namespace Napi;
-
 Napi::Value Universe::IsAlpha(const Napi::CallbackInfo& info) {
     if (this->_session_id == 0) {
         Napi::Env env = info.Env();
