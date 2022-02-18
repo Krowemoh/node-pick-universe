@@ -59,6 +59,9 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value ICONV(const Napi::CallbackInfo&);
         Napi::Value OCONV(const Napi::CallbackInfo&);
 
+        Napi::Value Remove(const Napi::CallbackInfo&);
+        Napi::Value Replace(const Napi::CallbackInfo&);
+
         Napi::Value RecordLock(const Napi::CallbackInfo&);
         Napi::Value RecordLocked(const Napi::CallbackInfo&);
         Napi::Value Release(const Napi::CallbackInfo&);
