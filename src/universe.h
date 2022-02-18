@@ -7,6 +7,7 @@ class Universe : public Napi::ObjectWrap<Universe>
     public:
         Universe(const Napi::CallbackInfo&);
         Napi::Value StartSession(const Napi::CallbackInfo&);
+        Napi::Value SetSession(const Napi::CallbackInfo&);
         Napi::Value EndSession(const Napi::CallbackInfo&);
         Napi::Value EndAllSessions(const Napi::CallbackInfo&);
 
@@ -31,6 +32,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value Write(const Napi::CallbackInfo&);
         Napi::Value WriteValue(const Napi::CallbackInfo&);
         Napi::Value Delete(const Napi::CallbackInfo&);
+        Napi::Value DeleteField(const Napi::CallbackInfo&);
 
         Napi::Value Date(const Napi::CallbackInfo&);
         Napi::Value Time(const Napi::CallbackInfo&);
@@ -55,6 +57,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value FileUnlock(const Napi::CallbackInfo&);
         Napi::Value GetLocale(const Napi::CallbackInfo&);
         Napi::Value GetValue(const Napi::CallbackInfo&);
+        Napi::Value SetValue(const Napi::CallbackInfo&);
 
         Napi::Value ICONV(const Napi::CallbackInfo&);
         Napi::Value OCONV(const Napi::CallbackInfo&);
@@ -65,6 +68,8 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value RecordLock(const Napi::CallbackInfo&);
         Napi::Value RecordLocked(const Napi::CallbackInfo&);
         Napi::Value Release(const Napi::CallbackInfo&);
+
+        Napi::Value SetTimeout(const Napi::CallbackInfo&);
 
         static Napi::Function GetClass(Napi::Env);
 

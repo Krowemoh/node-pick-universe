@@ -834,6 +834,33 @@ Napi::Value Universe::StartSession(const Napi::CallbackInfo& info) {
     return info.Env().Null();
 }
 
+Napi::Value Universe::SetSession(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long session_id = info[0].As<Napi::Number>().Uint32Value();
+
+    long code;
+    ic_setsession(&session_id, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to set session. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    this->_session_id = session_id;
+    return info.Env().Null();
+}
+
+
 Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
     if (this->_session_id == 0) {
         Napi::Env env = info.Env();
@@ -1605,6 +1632,41 @@ Napi::Value Universe::GetValue(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::SetValue(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_string = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(record_string.c_str());
+    const char *record = param.c_str();
+    long record_len = strlen(record);
+
+    long key = 0;
+    if (info.Length() > 1) {
+        key = info[1].As<Napi::Number>().Uint32Value();
+    }
+
+    long code;
+    ic_setvalue(&key, (char*)record, &record_len, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in setting value. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
 Napi::Value Universe::ICONV(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -1866,6 +1928,54 @@ Napi::Value Universe::Remove(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::DeleteField(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_string = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(record_string.c_str());
+    const char *record = param.c_str();
+    long record_len = strlen(record);
+
+    long field_pos = 0;
+    if (info.Length() > 1) {
+        field_pos = info[1].As<Napi::Number>().Uint32Value();
+    }
+
+    long value_pos = 0;
+    if (info.Length() > 2) {
+        value_pos = info[2].As<Napi::Number>().Uint32Value();
+    }
+
+    long subvalue_pos = 0;
+    if (info.Length() > 3) {
+        subvalue_pos = info[3].As<Napi::Number>().Uint32Value();
+    }
+
+    long code;
+    ic_strdel((char*)record, &record_len, &field_pos, &value_pos, & subvalue_pos, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in removing field. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
 Napi::Value Universe::Replace(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -1925,6 +2035,32 @@ Napi::Value Universe::Replace(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::SetTimeout(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long timeout = info[0].As<Napi::Number>().Uint32Value();
+
+    long code;
+    ic_set_comms_timeout(&timeout, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in setting timeout. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
 
@@ -1957,6 +2093,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("ClearData", &Universe::ClearData),
 
             Universe::InstanceMethod("StartSession", &Universe::StartSession),
+            Universe::InstanceMethod("SetSession", &Universe::SetSession),
             Universe::InstanceMethod("EndSession", &Universe::EndSession),
             Universe::InstanceMethod("EndAllSessions", &Universe::EndAllSessions),
 
@@ -1977,6 +2114,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("Write", &Universe::Write),
             Universe::InstanceMethod("WriteValue", &Universe::WriteValue),
             Universe::InstanceMethod("Delete", &Universe::Delete),
+            Universe::InstanceMethod("DeleteField", &Universe::DeleteField),
 
             Universe::InstanceMethod("Date", &Universe::Date),
             Universe::InstanceMethod("Time", &Universe::Time),
@@ -2001,6 +2139,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("FileUnlock", &Universe::FileUnlock),
             Universe::InstanceMethod("GetLocale", &Universe::GetLocale),
             Universe::InstanceMethod("GetValue", &Universe::GetValue),
+            Universe::InstanceMethod("SetValue", &Universe::SetValue),
 
             Universe::InstanceMethod("ICONV", &Universe::ICONV),
             Universe::InstanceMethod("OCONV", &Universe::OCONV),
@@ -2011,6 +2150,8 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("RecordLock", &Universe::RecordLock),
             Universe::InstanceMethod("RecordLocked", &Universe::RecordLocked),
             Universe::InstanceMethod("Release", &Universe::Release),
+
+            Universe::InstanceMethod("SetTimeout", &Universe::SetTimeout),
     });
 }
 
