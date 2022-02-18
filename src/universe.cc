@@ -279,8 +279,68 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
         }
     } while (code == IE_BTS);
 
+    if (code != 0) {
+        free(record);
+        char error[500];
+        snprintf(error, 500, "Failed to read record.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     unsigned char * out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
     free(record);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
+Napi::Value Universe::ReadValue(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    long field_number = info[1].As<Napi::Number>().Uint32Value();
+
+    long file_id = info[2].As<Napi::Number>().Uint32Value();
+
+    long max_field_size = 500;
+    char* field = (char*)malloc(max_field_size * sizeof(char));
+    long field_len = 0;
+
+    long lock = IK_READ;
+    long status_func;
+    long code;
+    do {
+        ic_readv(&file_id, &lock, (char*)record_id, &id_len, &field_number, field, &max_field_size, &field_len, &status_func, &code);
+        if (code == IE_BTS) {
+            free(field);
+            max_field_size = max_field_size * 2;
+            field = (char*)malloc(max_field_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        free(field);
+        char error[500];
+        snprintf(error, 500, "Record does not exist.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)field, field_len);
+    free(field);
 
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);
@@ -585,6 +645,54 @@ Napi::Value Universe::Select(const Napi::CallbackInfo& info) {
         return env.Null();
     }
     return env.Null();
+}
+
+Napi::Value Universe::ReadList(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long list_number = 0;
+    if(info.Length() > 0) {
+        list_number = info[0].As<Napi::Number>().Uint32Value();
+    }
+
+    long max_buffer_size = 500;
+    char *buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len;
+
+    long code;
+    long count;
+
+    do {
+        ic_readlist(&list_number, buffer, &max_buffer_size, &buffer_len, &count, &code);
+
+        if (code == IE_BTS) {
+            free(buffer);
+            max_buffer_size = max_buffer_size * 2;
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        free(buffer);
+        char error[100];
+        snprintf(error, 100, "Readlist failed. Code = %ld.\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
 }
 
 Napi::Value Universe::ClearSelect(const Napi::CallbackInfo& info) {
@@ -1602,6 +1710,112 @@ Napi::Value Universe::OCONV(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::RecordLock(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    long file_id = info[1].As<Napi::Number>().Uint32Value();
+
+    long lock = IK_READL;
+    if (info.Length() > 2) {
+       lock = info[2].As<Napi::Number>().Uint32Value();
+    }
+
+    long status_func;
+    long code;
+
+    ic_recordlock(&file_id, &lock, (char*)record_id, &id_len, &status_func, &code);
+
+    if (code != 0) {
+        char error[500];
+        snprintf(error, 500, "Failed to get a recordlock on the record.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Number data = Napi::Number::New(env, status_func);
+    return data;
+}
+
+Napi::Value Universe::RecordLocked(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    long file_id = info[1].As<Napi::Number>().Uint32Value();
+
+    long lock_status;
+
+    long status_func;
+    long code;
+
+    ic_recordlocked(&file_id, (char*)record_id, &id_len, &lock_status, &status_func, &code);
+
+    if (code != 0) {
+        char error[500];
+        snprintf(error, 500, "Failed to get a recordlock on the record.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Number data = Napi::Number::New(env, lock_status);
+    return data;
+}
+
+Napi::Value Universe::Release(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    long file_id = info[1].As<Napi::Number>().Uint32Value();
+
+    long code;
+    ic_release(&file_id, (char*)record_id, &id_len, &code);
+
+    if (code != 0) {
+        char error[500];
+        snprintf(error, 500, "Failed to get a recordlock on the record.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
 
@@ -1646,8 +1860,10 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("ReadNext", &Universe::ReadNext),
             Universe::InstanceMethod("FormList", &Universe::FormList),
             Universe::InstanceMethod("GetList", &Universe::GetList),
+            Universe::InstanceMethod("ReadList", &Universe::ReadList),
 
             Universe::InstanceMethod("Read", &Universe::Read),
+            Universe::InstanceMethod("ReadValue", &Universe::ReadValue),
             Universe::InstanceMethod("Trans", &Universe::Trans),
             Universe::InstanceMethod("Write", &Universe::Write),
             Universe::InstanceMethod("WriteValue", &Universe::WriteValue),
@@ -1679,6 +1895,10 @@ Napi::Function Universe::GetClass(Napi::Env env) {
 
             Universe::InstanceMethod("ICONV", &Universe::ICONV),
             Universe::InstanceMethod("OCONV", &Universe::OCONV),
+
+            Universe::InstanceMethod("RecordLock", &Universe::RecordLock),
+            Universe::InstanceMethod("RecordLocked", &Universe::RecordLocked),
+            Universe::InstanceMethod("Release", &Universe::Release),
     });
 }
 

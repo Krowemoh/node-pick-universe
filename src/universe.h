@@ -23,8 +23,10 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value ReadNext(const Napi::CallbackInfo&);
         Napi::Value FormList(const Napi::CallbackInfo&);
         Napi::Value GetList(const Napi::CallbackInfo&);
+        Napi::Value ReadList(const Napi::CallbackInfo&);
         
         Napi::Value Read(const Napi::CallbackInfo&);
+        Napi::Value ReadValue(const Napi::CallbackInfo&);
         Napi::Value Trans(const Napi::CallbackInfo&);
         Napi::Value Write(const Napi::CallbackInfo&);
         Napi::Value WriteValue(const Napi::CallbackInfo&);
@@ -56,6 +58,10 @@ class Universe : public Napi::ObjectWrap<Universe>
 
         Napi::Value ICONV(const Napi::CallbackInfo&);
         Napi::Value OCONV(const Napi::CallbackInfo&);
+
+        Napi::Value RecordLock(const Napi::CallbackInfo&);
+        Napi::Value RecordLocked(const Napi::CallbackInfo&);
+        Napi::Value Release(const Napi::CallbackInfo&);
 
         static Napi::Function GetClass(Napi::Env);
 
