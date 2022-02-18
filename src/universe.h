@@ -8,6 +8,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Universe(const Napi::CallbackInfo&);
         Napi::Value StartSession(const Napi::CallbackInfo&);
         Napi::Value EndSession(const Napi::CallbackInfo&);
+        Napi::Value EndAllSessions(const Napi::CallbackInfo&);
 
         Napi::Value CallSubroutine(const Napi::CallbackInfo&);
         Napi::Value Data(const Napi::CallbackInfo&);
@@ -24,11 +25,23 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value GetList(const Napi::CallbackInfo&);
         
         Napi::Value Read(const Napi::CallbackInfo&);
+        Napi::Value Trans(const Napi::CallbackInfo&);
         Napi::Value Write(const Napi::CallbackInfo&);
+        Napi::Value WriteValue(const Napi::CallbackInfo&);
         Napi::Value Delete(const Napi::CallbackInfo&);
 
         Napi::Value Date(const Napi::CallbackInfo&);
+        Napi::Value Time(const Napi::CallbackInfo&);
+        Napi::Value TimeDate(const Napi::CallbackInfo&);
+
+        Napi::Value Lock(const Napi::CallbackInfo&);
+        Napi::Value Unlock(const Napi::CallbackInfo&);
+
         Napi::Value IsAlpha(const Napi::CallbackInfo&);
+
+        Napi::Value Lower(const Napi::CallbackInfo&);
+        Napi::Value Raise(const Napi::CallbackInfo&);
+
         Napi::Value Format(const Napi::CallbackInfo&);
         Napi::Value Extract(const Napi::CallbackInfo&);
 
@@ -42,6 +55,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value GetValue(const Napi::CallbackInfo&);
 
         Napi::Value ICONV(const Napi::CallbackInfo&);
+        Napi::Value OCONV(const Napi::CallbackInfo&);
 
         static Napi::Function GetClass(Napi::Env);
 

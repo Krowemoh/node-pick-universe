@@ -287,6 +287,67 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::Trans(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    std::string filename_string = info[1].ToString().Utf8Value();
+    const char *filename = filename_string.c_str();
+    long file_len = strlen(filename);
+
+    long field_pos = -1;
+    if (info.Length() > 2) {
+        field_pos = info[2].As<Napi::Number>().Uint32Value();
+    }
+
+    long dict_flag = IK_DATA;
+
+    long max_buffer_size = 500;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = 0;
+
+    const char *control_code = "X";
+    long control_code_len = strlen(control_code);
+
+    long status_func;
+    long code;
+
+    do {
+        ic_trans((char*)filename, &file_len, &dict_flag, (char*)record_id, &id_len, &field_pos, (char *)control_code, &control_code_len, buffer, &max_buffer_size, &buffer_len, &status_func, &code);
+        if (code == IE_BTS) {
+            free(buffer);
+            max_buffer_size = max_buffer_size * 2;
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        free(buffer);
+        char error[500];
+        snprintf(error, 500, "Error in reading record. Code (%ld), Status (%ld).\n", code, status_func);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
 Napi::Value WriteBase(const Napi::CallbackInfo& info, long lock_type) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -339,6 +400,63 @@ Napi::Value Universe::Write(const Napi::CallbackInfo& info) {
     long lock_type = IK_WRITE;
     return WriteBase(info, lock_type);
 }
+
+Napi::Value WriteValueBase(const Napi::CallbackInfo& info, long lock_type) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+
+    std::string field_string = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(field_string.c_str());
+    const char *field = param.c_str();
+    long field_len = strlen(field);
+
+    std::string record_id_string = info[1].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long id_len = strlen(record_id);
+
+    long field_number = info[2].As<Napi::Number>().Uint32Value();
+
+    long file_id = info[3].As<Napi::Number>().Uint32Value();
+
+    long status_func;
+    long code;
+
+    ic_writev(&file_id, &lock_type, (char*)record_id, &id_len, &field_number, (char*)field, &field_len, &status_func, &code);
+
+    if (code == IE_LCK) {
+        char error[100];
+        snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    } else if (code != 0) {
+        char error[200];
+        snprintf(error, 200, "Error in writing value record. Code (%ld), Status (%ld). Record: %s\n", code, status_func, record_id);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return info.Env().Null();
+}
+
+Napi::Value Universe::WriteValue(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long lock_type = IK_WRITE;
+    return WriteValueBase(info, lock_type);
+}
+
+
 
 Napi::Value DeleteBase(const Napi::CallbackInfo& info, long lock_type) {
     setlocale(LC_ALL, "en_US.iso88591");
@@ -630,6 +748,28 @@ Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
     return info.Env().Null();
 }
 
+Napi::Value Universe::EndAllSessions(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long code;
+    ic_quitall(&code);
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to close sessions. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    this->_session_id = 0;
+    return info.Env().Null();
+}
+
 Napi::Value Universe::Date(const Napi::CallbackInfo& info) {
     if (this->_session_id == 0) {
         Napi::Env env = info.Env();
@@ -654,6 +794,60 @@ Napi::Value Universe::Date(const Napi::CallbackInfo& info) {
     return Napi::Number::New(env, date);
 }
 
+Napi::Value Universe::Time(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long time;
+    long code;
+    ic_time(&time, &code);
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to get time. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Env env = info.Env();
+    return Napi::Number::New(env, time);
+}
+
+Napi::Value Universe::TimeDate(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long max_buffer_size = 21;
+    char buffer[max_buffer_size];
+    long buffer_len;
+
+    long code;
+    ic_timedate(buffer, &max_buffer_size, &buffer_len, &code);
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to get time. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    Napi::Env env = info.Env();
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
 Napi::Value Universe::IsAlpha(const Napi::CallbackInfo& info) {
     if (this->_session_id == 0) {
         Napi::Env env = info.Env();
@@ -674,6 +868,122 @@ Napi::Value Universe::IsAlpha(const Napi::CallbackInfo& info) {
 
     Napi::Env env = info.Env();
     return Napi::Number::New(env, code);
+}
+
+Napi::Value Universe::Lower(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string temp = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(temp.c_str());
+
+    const char *buffer = param.c_str();
+    long buffer_len = strlen(buffer);
+
+    long code;
+    ic_lower((char *)buffer, &buffer_len, &code);
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    Napi::Env env = info.Env();
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+
+    return data;
+}
+
+Napi::Value Universe::Raise(const Napi::CallbackInfo& info) {
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string temp = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(temp.c_str());
+
+    const char *buffer = param.c_str();
+    long buffer_len = strlen(buffer);
+
+    long code;
+    ic_raise((char *)buffer, &buffer_len, &code);
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    Napi::Env env = info.Env();
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+
+    return data;
+}
+
+Napi::Value Universe::Lock(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long lock_number = info[0].As<Napi::Number>().Uint32Value();
+    if (lock_number < 0 || lock_number > 63) {
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, "Invalid lock.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long code;
+    ic_lock(&lock_number, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to get lock. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
+Napi::Value Universe::Unlock(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        Napi::Env env = info.Env();
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long lock_number = info[0].As<Napi::Number>().Uint32Value();
+    if (lock_number < 0 || lock_number > 63) {
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, "Invalid lock.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long code;
+    ic_unlock(&lock_number, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Failed to unlock. Code = %ld\n", code);
+        Napi::Env env = info.Env();
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
 }
 
 Napi::Value Universe::Extract(const Napi::CallbackInfo& info) {
@@ -1240,6 +1550,57 @@ Napi::Value Universe::ICONV(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::OCONV(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_string = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(record_string.c_str());
+    const char *record = param.c_str();
+    long record_len = strlen(record);
+
+    std::string conversion_string = info[1].ToString().Utf8Value();
+    std::string conversion_param = UTF8toISO8859_1(conversion_string.c_str());
+    const char *conversion = conversion_param.c_str();
+    long conversion_len = strlen(conversion);
+
+    long max_buffer_size = 500;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = 0;
+
+    long code;
+    do {
+        ic_oconv((char*)conversion, &conversion_len, (char*)record, &record_len, buffer, &max_buffer_size, &buffer_len, &code);
+        if (code == IE_BTS) {
+            free(buffer);
+            max_buffer_size = max_buffer_size * 2;
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0 && code != 1 && code != 2 && code != 3) {
+        free(buffer);
+        char error[100];
+        snprintf(error, 100, "Error in iconv. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
 
 Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
     Napi::Env env = info.Env();
@@ -1274,6 +1635,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
 
             Universe::InstanceMethod("StartSession", &Universe::StartSession),
             Universe::InstanceMethod("EndSession", &Universe::EndSession),
+            Universe::InstanceMethod("EndAllSessions", &Universe::EndAllSessions),
 
             Universe::InstanceMethod("Open", &Universe::Open),
             Universe::InstanceMethod("Close", &Universe::Close),
@@ -1286,11 +1648,23 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("GetList", &Universe::GetList),
 
             Universe::InstanceMethod("Read", &Universe::Read),
+            Universe::InstanceMethod("Trans", &Universe::Trans),
             Universe::InstanceMethod("Write", &Universe::Write),
+            Universe::InstanceMethod("WriteValue", &Universe::WriteValue),
             Universe::InstanceMethod("Delete", &Universe::Delete),
 
             Universe::InstanceMethod("Date", &Universe::Date),
+            Universe::InstanceMethod("Time", &Universe::Time),
+            Universe::InstanceMethod("TimeDate", &Universe::TimeDate),
+
+            Universe::InstanceMethod("Lock", &Universe::Lock),
+            Universe::InstanceMethod("Unlock", &Universe::Unlock),
+
             Universe::InstanceMethod("IsAlpha", &Universe::IsAlpha),
+
+            Universe::InstanceMethod("Lower", &Universe::Lower),
+            Universe::InstanceMethod("Raise", &Universe::Raise),
+
             Universe::InstanceMethod("Format", &Universe::Format),
             Universe::InstanceMethod("Extract", &Universe::Extract),
 
@@ -1304,6 +1678,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("GetValue", &Universe::GetValue),
 
             Universe::InstanceMethod("ICONV", &Universe::ICONV),
+            Universe::InstanceMethod("OCONV", &Universe::OCONV),
     });
 }
 
