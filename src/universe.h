@@ -19,7 +19,10 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value Close(const Napi::CallbackInfo&);
         Napi::Value ClearFile(const Napi::CallbackInfo&);
 
+        Napi::Value Indices(const Napi::CallbackInfo&);
+
         Napi::Value Select(const Napi::CallbackInfo&);
+        Napi::Value SelectIndex(const Napi::CallbackInfo&);
         Napi::Value ClearSelect(const Napi::CallbackInfo&);
         Napi::Value ReadNext(const Napi::CallbackInfo&);
         Napi::Value FormList(const Napi::CallbackInfo&);

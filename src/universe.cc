@@ -618,6 +618,103 @@ Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::Indices(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    long file_id = info[0].As<Napi::Number>().Uint32Value();
+
+    std::string index_string = "";
+    if (info.Length() > 1) {
+        index_string = info[1].ToString().Utf8Value();
+    }
+
+    const char* ak_name = index_string.c_str();
+    long ak_len = strlen(ak_name);
+
+    long max_buffer_size = 500;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = 0;
+
+    long code;
+    do {
+        ic_indices(&file_id, (char*)ak_name, &ak_len, buffer, &max_buffer_size, &buffer_len, &code);
+
+        if (code == IE_BTS) {
+            free(buffer);
+            max_buffer_size = max_buffer_size * 2;
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        free(buffer);
+        char error[100];
+        snprintf(error, 100, "Failed to get indices. Code = %ld.\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+ 
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
+Napi::Value Universe::SelectIndex(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string index_string = info[0].ToString().Utf8Value();
+    const char* ak_name = index_string.c_str();
+    long ak_len = strlen(ak_name);
+
+    std::string value_string = info[1].ToString().Utf8Value();
+    const char* ak_value = value_string.c_str();
+    long ak_value_len = strlen(ak_value);
+
+    long file_id = info[2].As<Napi::Number>().Uint32Value();
+
+    long list_number = 0;
+    if(info.Length() > 3) {
+        list_number = info[3].As<Napi::Number>().Uint32Value();
+    }
+
+    long status_func;
+    long code;
+    ic_selectindex(&file_id, &list_number, (char*)ak_name, &ak_len, (char*)ak_value, &ak_value_len, &status_func, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "SelectIndex failed. Code = %ld.\n", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    if (status_func != 0) {
+        char error[100];
+        snprintf(error, 100, "SelectIndex failed. Status = %ld.\n", status_func);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    return env.Null();
+}
+
 Napi::Value Universe::Select(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -2146,7 +2243,10 @@ Napi::Function Universe::GetClass(Napi::Env env) {
             Universe::InstanceMethod("Close", &Universe::Close),
             Universe::InstanceMethod("ClearFile", &Universe::ClearFile),
 
+            Universe::InstanceMethod("Indices", &Universe::Indices),
+
             Universe::InstanceMethod("Select", &Universe::Select),
+            Universe::InstanceMethod("SelectIndex", &Universe::SelectIndex),
             Universe::InstanceMethod("ClearSelect", &Universe::ClearSelect),
             Universe::InstanceMethod("ReadNext", &Universe::ReadNext),
             Universe::InstanceMethod("FormList", &Universe::FormList),
