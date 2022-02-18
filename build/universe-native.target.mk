@@ -94,7 +94,9 @@ INCS_Release := \
 	-I/home/nivethan/bp/universe/node_modules/node-addon-api
 
 OBJS := \
-	$(obj).target/$(TARGET)/src/universe.o
+	$(obj).target/$(TARGET)/src/convert.o \
+	$(obj).target/$(TARGET)/src/universe.o \
+	$(obj).target/$(TARGET)/src/is_alpha.o
 
 # Add to the list of files we specially track dependencies for.
 all_deps += $(OBJS)
