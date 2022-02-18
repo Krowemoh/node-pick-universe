@@ -1384,6 +1384,62 @@ Napi::Value Universe::ContinueExecution(const Napi::CallbackInfo& info) {
     return arguments;
 }
 
+Napi::Value Universe::RunIType(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_id_string = info[0].ToString().Utf8Value();
+    const char *record_id = record_id_string.c_str();
+    long record_id_len = strlen(record_id);
+
+    std::string filename_string = info[1].ToString().Utf8Value();
+    const char *filename = filename_string.c_str();
+    long filename_len = strlen(filename);
+
+    std::string itype_string = info[2].ToString().Utf8Value();
+    const char *itype = itype_string.c_str();
+    long itype_len = strlen(itype);
+
+    long max_buffer_size = 500;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = 0;
+
+    long code;
+
+    do {
+        ic_itype((char*)filename, &filename_len, (char*)record_id, &record_id_len, (char*)itype, &itype_len, buffer, &max_buffer_size, &buffer_len, &code);
+
+        if (code == IE_BTS) {
+            free(buffer);
+            max_buffer_size = max_buffer_size * 2;
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in getting session info. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
+
 Napi::Value Universe::FileInfo(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -2025,6 +2081,75 @@ Napi::Value Universe::Remove(const Napi::CallbackInfo& info) {
     return data;
 }
 
+Napi::Value Universe::Insert(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string record_string = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(record_string.c_str());
+    const char *record = param.c_str();
+    long record_len = strlen(record);
+
+    long max_buffer_size = record_len*2;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = record_len;
+    memcpy(buffer, record, record_len);
+
+    std::string insert_string = info[1].ToString().Utf8Value();
+    std::string insert_param = UTF8toISO8859_1(insert_string.c_str());
+    const char *insert = insert_param.c_str();
+    long insert_len = strlen(insert);
+
+    long field_pos = 0;
+    if (info.Length() > 2) {
+        field_pos = info[2].As<Napi::Number>().Uint32Value();
+    }
+
+    long value_pos = 0;
+    if (info.Length() > 3) {
+        value_pos = info[3].As<Napi::Number>().Uint32Value();
+    }
+
+    long subvalue_pos = 0;
+    if (info.Length() > 4) {
+        subvalue_pos = info[4].As<Napi::Number>().Uint32Value();
+    }
+
+    long code;
+
+    do {
+        ic_insert((char*)buffer, &max_buffer_size, &buffer_len, &field_pos, &value_pos, &subvalue_pos, (char*)insert, &insert_len, &code);
+        if (code == IE_BTS) {
+            max_buffer_size = max_buffer_size * 2;
+            free(buffer);
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+            memcpy(buffer, record, record_len);
+        }
+    } while (code == IE_BTS);
+
+    if (code != 0) {
+        free(buffer);
+        char error[100];
+        snprintf(error, 100, "Error in insertion. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
+    Napi::String data = Napi::String::New(env, (char*)out);
+    free(out);
+    return data;
+}
+
 Napi::Value Universe::DeleteField(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -2089,7 +2214,11 @@ Napi::Value Universe::Replace(const Napi::CallbackInfo& info) {
     std::string param = UTF8toISO8859_1(record_string.c_str());
     const char *record = param.c_str();
     long record_len = strlen(record);
-    long max_record_size = record_len*2;
+
+    long max_buffer_size = record_len*2;
+    char* buffer = (char*)malloc(max_buffer_size * sizeof(char));
+    long buffer_len = record_len;
+    memcpy(buffer, record, record_len);
 
     std::string replace_string = info[1].ToString().Utf8Value();
     std::string replace_param = UTF8toISO8859_1(replace_string.c_str());
@@ -2113,20 +2242,25 @@ Napi::Value Universe::Replace(const Napi::CallbackInfo& info) {
 
     long code;
     do {
-        ic_replace((char*)record, &max_record_size, &record_len, &field_pos, &value_pos, & subvalue_pos, (char*)replace, &replace_len, &code);
+        ic_replace((char*)buffer, &max_buffer_size, &buffer_len, &field_pos, &value_pos, & subvalue_pos, (char*)replace, &replace_len, &code);
         if (code == IE_BTS) {
-            max_record_size = max_record_size * 2;
+            max_buffer_size = max_buffer_size * 2;
+            free(buffer);
+            buffer = (char*)malloc(max_buffer_size * sizeof(char));
+            memcpy(buffer, record, record_len);
         }
     } while (code == IE_BTS);
 
     if (code != 0) {
+        free(buffer);
         char error[100];
         snprintf(error, 100, "Error in removing field. Code: %ld", code);
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)record, record_len);
+    unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
+    free(buffer);
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);
     return data;
@@ -2156,6 +2290,67 @@ Napi::Value Universe::SetTimeout(const Napi::CallbackInfo& info) {
     }
 
     return env.Null();
+}
+
+Napi::Value Universe::Locate(const Napi::CallbackInfo& info) {
+    setlocale(LC_ALL, "en_US.iso88591");
+
+    Napi::Env env = info.Env();
+
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    std::string search_string = info[0].ToString().Utf8Value();
+    std::string param = UTF8toISO8859_1(search_string.c_str());
+    const char *search = param.c_str();
+    long search_len = strlen(search);
+
+    std::string haystack_string = info[1].ToString().Utf8Value();
+    std::string haystack_param = UTF8toISO8859_1(haystack_string.c_str());
+    const char *haystack = haystack_param.c_str();
+    long haystack_len = strlen(haystack);
+
+    std::string order_string = info[2].ToString().Utf8Value();
+    std::string order_param = UTF8toISO8859_1(order_string.c_str());
+    const char *order = order_param.c_str();
+    long order_len = strlen(order);
+
+    long start = 1;
+    if (info.Length() > 3) {
+        start = info[3].As<Napi::Number>().Uint32Value();
+    }
+
+    long field_pos = 0;
+    if (info.Length() > 4) {
+        field_pos = info[4].As<Napi::Number>().Uint32Value();
+    }
+
+    long value_pos = 0;
+    if (info.Length() > 5) {
+        value_pos = info[5].As<Napi::Number>().Uint32Value();
+    }
+
+    long index;
+    long found;
+    long code;
+
+    ic_locate((char*)search, &search_len, (char*)haystack, &haystack_len, &field_pos, &value_pos, &start, (char*)order, &order_len, &index, &found, &code);
+
+    if (code != 0) {
+        char error[100];
+        snprintf(error, 100, "Error in locate. Code: %ld", code);
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Napi::Array arguments = Napi::Array::New(env, 2);
+    arguments[(int)0] = found;
+    arguments[1] = index;
+    return arguments;
 }
 
 Napi::Value Universe::SessionInfo(const Napi::CallbackInfo& info) {
@@ -2275,9 +2470,12 @@ Napi::Function Universe::GetClass(Napi::Env env) {
 
             Universe::InstanceMethod("Format", &Universe::Format),
             Universe::InstanceMethod("Extract", &Universe::Extract),
+            Universe::InstanceMethod("Insert", &Universe::Insert),
+            Universe::InstanceMethod("Locate", &Universe::Locate),
 
             Universe::InstanceMethod("Execute", &Universe::Execute),
             Universe::InstanceMethod("ContinueExecution", &Universe::ContinueExecution),
+            Universe::InstanceMethod("RunIType", &Universe::RunIType),
 
             Universe::InstanceMethod("FileInfo", &Universe::FileInfo),
             Universe::InstanceMethod("FileLock", &Universe::FileLock),

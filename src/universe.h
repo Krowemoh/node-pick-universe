@@ -51,9 +51,12 @@ class Universe : public Napi::ObjectWrap<Universe>
 
         Napi::Value Format(const Napi::CallbackInfo&);
         Napi::Value Extract(const Napi::CallbackInfo&);
+        Napi::Value Insert(const Napi::CallbackInfo&);
+        Napi::Value Locate(const Napi::CallbackInfo&);
 
         Napi::Value Execute(const Napi::CallbackInfo&);
         Napi::Value ContinueExecution(const Napi::CallbackInfo&);
+        Napi::Value RunIType(const Napi::CallbackInfo&);
 
         Napi::Value FileInfo(const Napi::CallbackInfo&);
         Napi::Value FileLock(const Napi::CallbackInfo&);
