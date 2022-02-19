@@ -5,9 +5,7 @@
     "node-addon-api": "^1.1.0",
     "pick-mv": "^1.0.1"
   },
-  "scripts": {
-    "test": "node --napi-modules ./test/test_binding.js"
-  },
+  "scripts": {},
   "gypfile": true,
   "name": "pick-universe",
   "version": "0.1.0",
