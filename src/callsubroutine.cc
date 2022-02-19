@@ -95,10 +95,9 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
         }
     }
 
-    std::string name = info[0].ToString().Utf8Value();
-    char *subname = (char *)name.c_str();
+    std::string subname = info[0].ToString().Utf8Value();
 
-    long sub_status = call_subroutine(subname, MAX_ARGS, icList);
+    long sub_status = call_subroutine(subname.data(), MAX_ARGS, icList);
 
     if (false) {
         if (sub_status != 0) {
