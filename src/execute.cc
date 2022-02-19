@@ -10,6 +10,11 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
 
     Napi::Env env = info.Env();
 
+    if (this->_session_id == 0) {
+        Napi::TypeError::New(env, "Session has not been started.").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     std::string command_string = info[0].ToString().Utf8Value();
     std::string param = UTF8toISO8859_1(command_string.c_str());
     const char *command = param.c_str();
@@ -31,7 +36,6 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
 
     if (code == IE_BTS) {
         do {
-
             ic_executecontinue(buffer, &buffer_len, &text_len, &r1, &r2, &code);
             text.append(buffer, 0, text_len);
         } while (code == IE_BTS);

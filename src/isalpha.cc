@@ -10,7 +10,7 @@ Napi::Value Universe::IsAlpha(const Napi::CallbackInfo& info) {
 
     if (this->_session_id == 0) {
         Napi::TypeError::New(env, "Session has not been started.").ThrowAsJavaScriptException();
-        return env.Null();
+        return env.Null(); 
     }
 
     std::string temp = info[0].ToString().Utf8Value();

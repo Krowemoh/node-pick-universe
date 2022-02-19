@@ -6,11 +6,10 @@
 #include "universe.h"
 
 Napi::Value Universe::Time(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
     if (this->_session_id == 0) {
-        Napi::Env env = info.Env();
-        char error[100];
-        snprintf(error, 100, "Session has not been started.\n");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Session has not been started.").ThrowAsJavaScriptException();
         return env.Null();
     }
 
@@ -20,11 +19,9 @@ Napi::Value Universe::Time(const Napi::CallbackInfo& info) {
     if (code != 0) {
         char error[100];
         snprintf(error, 100, "Failed to get time. Code = %ld\n", code);
-        Napi::Env env = info.Env();
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    Napi::Env env = info.Env();
     return Napi::Number::New(env, time);
 }

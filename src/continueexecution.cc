@@ -10,6 +10,11 @@ Napi::Value Universe::ContinueExecution(const Napi::CallbackInfo& info) {
 
     Napi::Env env = info.Env();
 
+    if (this->_session_id == 0) {
+        Napi::TypeError::New(env, "Session has not been started.").ThrowAsJavaScriptException();
+        return env.Null(); 
+    }
+    
     std::string reply_string = info[0].ToString().Utf8Value();
     const char *reply = reply_string.c_str();
     long reply_len = strlen(reply);

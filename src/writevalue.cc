@@ -10,7 +10,6 @@ Napi::Value WriteValueBase(const Napi::CallbackInfo& info, long lock_type) {
 
     Napi::Env env = info.Env();
 
-
     std::string field_string = info[0].ToString().Utf8Value();
     std::string param = UTF8toISO8859_1(field_string.c_str());
     const char *field = param.c_str();
@@ -50,9 +49,7 @@ Napi::Value Universe::WriteValue(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     if (this->_session_id == 0) {
-        char error[100];
-        snprintf(error, 100, "Session has not been started.\n");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Session has not been started.").ThrowAsJavaScriptException(); 
         return env.Null();
     }
 

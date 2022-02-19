@@ -10,6 +10,8 @@ Napi::Value DeleteBase(const Napi::CallbackInfo& info, long lock_type) {
 
     Napi::Env env = info.Env();
 
+    
+
     std::string record_id_string = info[0].ToString().Utf8Value();
     const char *record_id = record_id_string.c_str();
     long id_len = strlen(record_id);
@@ -42,11 +44,10 @@ Napi::Value DeleteBase(const Napi::CallbackInfo& info, long lock_type) {
 }
 
 Napi::Value Universe::Delete(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
     if (this->_session_id == 0) {
-        Napi::Env env = info.Env();
-        char error[100];
-        snprintf(error, 100, "Session has not been started.\n");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Session has not been started.").ThrowAsJavaScriptException();
         return env.Null();
     }
 
