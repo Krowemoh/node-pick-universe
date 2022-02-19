@@ -67,6 +67,13 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
     Napi::Env env = info.Env();
 
+    if (this->_session_id == 0) {
+        char error[100];
+        snprintf(error, 100, "Session has not been started.\n");
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     int MAX_ARGS = info.Length() -1;
     ICSTRING icList[MAX_ARGS];
 
