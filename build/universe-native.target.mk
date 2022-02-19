@@ -94,16 +94,16 @@ INCS_Release := \
 	-I/home/nivethan/bp/universe/node_modules/node-addon-api
 
 OBJS := \
-	$(obj).target/$(TARGET)/src/convert.o \
-	$(obj).target/$(TARGET)/src/universe.o \
 	$(obj).target/$(TARGET)/src/callsubroutine.o \
 	$(obj).target/$(TARGET)/src/cleardata.o \
 	$(obj).target/$(TARGET)/src/clearfile.o \
 	$(obj).target/$(TARGET)/src/clearselect.o \
 	$(obj).target/$(TARGET)/src/close.o \
 	$(obj).target/$(TARGET)/src/continueexecution.o \
+	$(obj).target/$(TARGET)/src/convert.o \
 	$(obj).target/$(TARGET)/src/data.o \
 	$(obj).target/$(TARGET)/src/date.o \
+	$(obj).target/$(TARGET)/src/delete.o \
 	$(obj).target/$(TARGET)/src/deletefield.o \
 	$(obj).target/$(TARGET)/src/endallsessions.o \
 	$(obj).target/$(TARGET)/src/endsession.o \
@@ -147,7 +147,10 @@ OBJS := \
 	$(obj).target/$(TARGET)/src/time.o \
 	$(obj).target/$(TARGET)/src/timedate.o \
 	$(obj).target/$(TARGET)/src/trans.o \
-	$(obj).target/$(TARGET)/src/unlock.o
+	$(obj).target/$(TARGET)/src/universe.o \
+	$(obj).target/$(TARGET)/src/unlock.o \
+	$(obj).target/$(TARGET)/src/write.o \
+	$(obj).target/$(TARGET)/src/writevalue.o
 
 # Add to the list of files we specially track dependencies for.
 all_deps += $(OBJS)
