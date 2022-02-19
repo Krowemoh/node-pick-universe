@@ -96,7 +96,58 @@ INCS_Release := \
 OBJS := \
 	$(obj).target/$(TARGET)/src/convert.o \
 	$(obj).target/$(TARGET)/src/universe.o \
-	$(obj).target/$(TARGET)/src/is_alpha.o
+	$(obj).target/$(TARGET)/src/callsubroutine.o \
+	$(obj).target/$(TARGET)/src/cleardata.o \
+	$(obj).target/$(TARGET)/src/clearfile.o \
+	$(obj).target/$(TARGET)/src/clearselect.o \
+	$(obj).target/$(TARGET)/src/close.o \
+	$(obj).target/$(TARGET)/src/continueexecution.o \
+	$(obj).target/$(TARGET)/src/data.o \
+	$(obj).target/$(TARGET)/src/date.o \
+	$(obj).target/$(TARGET)/src/deletefield.o \
+	$(obj).target/$(TARGET)/src/endallsessions.o \
+	$(obj).target/$(TARGET)/src/endsession.o \
+	$(obj).target/$(TARGET)/src/execute.o \
+	$(obj).target/$(TARGET)/src/extract.o \
+	$(obj).target/$(TARGET)/src/fileinfo.o \
+	$(obj).target/$(TARGET)/src/filelock.o \
+	$(obj).target/$(TARGET)/src/fileunlock.o \
+	$(obj).target/$(TARGET)/src/format.o \
+	$(obj).target/$(TARGET)/src/formlist.o \
+	$(obj).target/$(TARGET)/src/getlist.o \
+	$(obj).target/$(TARGET)/src/getlocale.o \
+	$(obj).target/$(TARGET)/src/getvalue.o \
+	$(obj).target/$(TARGET)/src/iconv.o \
+	$(obj).target/$(TARGET)/src/indices.o \
+	$(obj).target/$(TARGET)/src/insert.o \
+	$(obj).target/$(TARGET)/src/isalpha.o \
+	$(obj).target/$(TARGET)/src/locate.o \
+	$(obj).target/$(TARGET)/src/lock.o \
+	$(obj).target/$(TARGET)/src/lower.o \
+	$(obj).target/$(TARGET)/src/oconv.o \
+	$(obj).target/$(TARGET)/src/open.o \
+	$(obj).target/$(TARGET)/src/raise.o \
+	$(obj).target/$(TARGET)/src/read.o \
+	$(obj).target/$(TARGET)/src/readlist.o \
+	$(obj).target/$(TARGET)/src/readnext.o \
+	$(obj).target/$(TARGET)/src/readvalue.o \
+	$(obj).target/$(TARGET)/src/recordlock.o \
+	$(obj).target/$(TARGET)/src/recordlocked.o \
+	$(obj).target/$(TARGET)/src/release.o \
+	$(obj).target/$(TARGET)/src/remove.o \
+	$(obj).target/$(TARGET)/src/replace.o \
+	$(obj).target/$(TARGET)/src/runitype.o \
+	$(obj).target/$(TARGET)/src/select.o \
+	$(obj).target/$(TARGET)/src/selectindex.o \
+	$(obj).target/$(TARGET)/src/sessioninfo.o \
+	$(obj).target/$(TARGET)/src/setsession.o \
+	$(obj).target/$(TARGET)/src/settimeout.o \
+	$(obj).target/$(TARGET)/src/setvalue.o \
+	$(obj).target/$(TARGET)/src/startsession.o \
+	$(obj).target/$(TARGET)/src/time.o \
+	$(obj).target/$(TARGET)/src/timedate.o \
+	$(obj).target/$(TARGET)/src/trans.o \
+	$(obj).target/$(TARGET)/src/unlock.o
 
 # Add to the list of files we specially track dependencies for.
 all_deps += $(OBJS)
