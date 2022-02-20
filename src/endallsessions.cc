@@ -16,8 +16,7 @@ Napi::Value Universe::EndAllSessions(const Napi::CallbackInfo& info) {
     long code;
     ic_quitall(&code);
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to close sessions. Code = %ld\n", code);
+        std::string error = "Error in closing all sessions. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

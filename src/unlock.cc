@@ -15,7 +15,6 @@ Napi::Value Universe::Unlock(const Napi::CallbackInfo& info) {
 
     long lock_number = info[0].As<Napi::Number>().Uint32Value();
     if (lock_number < 0 || lock_number > 63) {
-        Napi::Env env = info.Env();
         Napi::TypeError::New(env, "Invalid lock.").ThrowAsJavaScriptException();
         return env.Null();
     }
@@ -24,9 +23,7 @@ Napi::Value Universe::Unlock(const Napi::CallbackInfo& info) {
     ic_unlock(&lock_number, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to unlock. Code = %ld\n", code);
-        Napi::Env env = info.Env();
+        std::string error = "Error in unlocking. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

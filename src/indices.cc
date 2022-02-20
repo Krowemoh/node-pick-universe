@@ -40,8 +40,7 @@ Napi::Value Universe::Indices(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(buffer);
-        char error[100];
-        snprintf(error, 100, "Failed to get indices. Code = %ld.\n", code);
+        std::string error = "Error in getting indices. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

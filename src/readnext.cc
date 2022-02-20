@@ -40,8 +40,7 @@ Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
 
     } else if (code != 0) {
         free(record_id);
-        char error[100];
-        snprintf(error, 100, "Select failed. Code = %ld.\n", code);
+        std::string error = "Error, No select list. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

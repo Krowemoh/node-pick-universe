@@ -22,6 +22,12 @@ Napi::Value Universe::Lower(const Napi::CallbackInfo& info) {
     long code;
     ic_lower((char *)buffer, &buffer_len, &code);
 
+    if (code != 0) {
+        std::string error = "Error in lowering. Code (" + std::to_string(code) + ")";
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);

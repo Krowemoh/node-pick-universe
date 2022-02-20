@@ -29,8 +29,7 @@ Napi::Value Universe::SetValue(const Napi::CallbackInfo& info) {
     ic_setvalue(&key, (char*)record, &record_len, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in setting value. Code: %ld", code);
+        std::string error = "Error in setting value. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

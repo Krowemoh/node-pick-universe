@@ -19,9 +19,9 @@ Napi::Value Universe::TimeDate(const Napi::CallbackInfo& info) {
 
     long code;
     ic_timedate(buffer, &max_buffer_size, &buffer_len, &code);
+
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to get time. Code = %ld\n", code);
+        std::string error = "Error in getting time and date. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

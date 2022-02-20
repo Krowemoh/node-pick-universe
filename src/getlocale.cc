@@ -36,8 +36,7 @@ Napi::Value Universe::GetLocale(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(buffer);
-        char error[100];
-        snprintf(error, 100, "Error in getting locale. Code: %ld", code);
+        std::string error = "Error in getting locale. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

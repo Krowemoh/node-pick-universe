@@ -22,16 +22,13 @@ Napi::Value Universe::FileUnlock(const Napi::CallbackInfo& info) {
     ic_fileunlock(&file_id, &status_func, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in unlocking the file. Code: %ld", code);
+        std::string error = "Error in unlocking file. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
 
     if (status_func != 0) {
-        char error[100];
-        snprintf(error, 100, "This file wasn't locked.");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "File wasn't locked.").ThrowAsJavaScriptException();
         return env.Null();
 
     }

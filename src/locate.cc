@@ -52,8 +52,7 @@ Napi::Value Universe::Locate(const Napi::CallbackInfo& info) {
     ic_locate((char*)search, &search_len, (char*)haystack, &haystack_len, &field_pos, &value_pos, &start, (char*)order, &order_len, &index, &found, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in locate. Code: %ld", code);
+        std::string error = "Error in locate. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

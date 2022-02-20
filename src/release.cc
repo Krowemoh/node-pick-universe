@@ -25,8 +25,7 @@ Napi::Value Universe::Release(const Napi::CallbackInfo& info) {
     ic_release(&file_id, (char*)record_id, &id_len, &code);
 
     if (code != 0) {
-        char error[500];
-        snprintf(error, 500, "Failed to get a recordlock on the record.\n");
+        std::string error = "Error in releasing. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

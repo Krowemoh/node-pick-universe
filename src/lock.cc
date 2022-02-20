@@ -24,9 +24,7 @@ Napi::Value Universe::Lock(const Napi::CallbackInfo& info) {
     ic_lock(&lock_number, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to get lock. Code = %ld\n", code);
-        Napi::Env env = info.Env();
+        std::string error = "Error in locking. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

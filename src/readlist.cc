@@ -37,8 +37,7 @@ Napi::Value Universe::ReadList(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(buffer);
-        char error[100];
-        snprintf(error, 100, "Readlist failed. Code = %ld.\n", code);
+        std::string error = "Error in reading list. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

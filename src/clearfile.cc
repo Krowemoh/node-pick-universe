@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "intcall.h"
-#include "convert.h"
 #include "universe.h"
 
 Napi::Value Universe::ClearFile(const Napi::CallbackInfo& info) {
@@ -19,14 +18,12 @@ Napi::Value Universe::ClearFile(const Napi::CallbackInfo& info) {
     ic_clearfile(&file_id, &code);
 
     if (code == IE_ENOENT) {
-        char error[100];
-        snprintf(error, 100, "No such file or directory to clear. Code (%ld).", code);
+        std::string error = "No such file or directory to clear. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
 
     } else if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in clearing file. Code (%ld)\n", code);
+        std::string error = "Error in clearing file. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

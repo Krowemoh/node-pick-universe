@@ -42,8 +42,11 @@ Napi::Value Universe::ContinueExecution(const Napi::CallbackInfo& info) {
     }
 
     if (code != 0 && code != IE_AT_INPUT) {
-        char error[100];
-        snprintf(error, 100, "Error in continuing execution. Code: %ld, R1: (%ld), R2: (%ld).\n", code, r1, r2);
+        std::string error = "Error in continuing execution. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "R1 (" + std::to_string(r1) + "), ";
+        error += "R1 (" + std::to_string(r2) + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

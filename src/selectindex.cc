@@ -33,15 +33,13 @@ Napi::Value Universe::SelectIndex(const Napi::CallbackInfo& info) {
     ic_selectindex(&file_id, &list_number, (char*)ak_name, &ak_len, (char*)ak_value, &ak_value_len, &status_func, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "SelectIndex failed. Code = %ld.\n", code);
+        std::string error = "Error in selectindex. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
 
     if (status_func != 0) {
-        char error[100];
-        snprintf(error, 100, "SelectIndex failed. Status = %ld.\n", status_func);
+        std::string error = "Failed selectindex. Status (" + std::to_string(status_func) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

@@ -32,9 +32,7 @@ Napi::Value Universe::RecordLock(const Napi::CallbackInfo& info) {
     ic_recordlock(&file_id, &lock, (char*)record_id, &id_len, &status_func, &code);
 
     if (code != 0) {
-        char error[500];
-        snprintf(error, 500, "Failed to get a recordlock on the record.\n");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Failed to get a recordlock.").ThrowAsJavaScriptException();
         return env.Null();
     }
 

@@ -10,32 +10,30 @@ Napi::Value DeleteBase(const Napi::CallbackInfo& info, long lock_type) {
 
     Napi::Env env = info.Env();
 
-    
-
-    std::string record_id_string = info[0].ToString().Utf8Value();
-    const char *record_id = record_id_string.c_str();
-    long id_len = strlen(record_id);
+    std::string record_id = info[0].ToString().Utf8Value();
+    long id_len = record_id.length();
 
     long file_id = info[1].As<Napi::Number>().Uint32Value();
 
     long status_func;
     long code;
 
-    ic_delete(&file_id, &lock_type, (char*)record_id, &id_len, &status_func, &code);
+    ic_delete(&file_id, &lock_type, record_id.data(), &id_len, &status_func, &code);
 
     if (code == IE_RNF) {
-        char error[100];
-        snprintf(error, 100, "Record not found. Record: %s\n",  record_id);
+        std::string error = "Record not found. Record (" + record_id + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     } else if (code == IE_LCK) {
-        char error[100];
-        snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+        std::string error = "Record is locked. Record (" + record_id + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     } else if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in deleting record. Code (%ld), Status (%ld). Record: %s\n", code, status_func, record_id);
+        std::string error = "Error in deleting record. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "Status (" + std::to_string(status_func) + "), ";
+        error += "Record ID (" + record_id + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

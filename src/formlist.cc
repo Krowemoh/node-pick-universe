@@ -29,8 +29,7 @@ Napi::Value Universe::FormList(const Napi::CallbackInfo& info) {
     ic_formlist((char*)list_c, &list_len, &list_number, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in forming list. Code: %ld", code);
+        std::string error = "Error in forming list. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

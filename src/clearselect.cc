@@ -13,18 +13,16 @@ Napi::Value Universe::ClearSelect(const Napi::CallbackInfo& info) {
         return env.Null(); 
     }
 
-    long code;
-
     long list_number = 0;
-    if(info.Length() > 0) {
+    if (info.Length() > 0) {
         list_number = info[0].As<Napi::Number>().Uint32Value();
     }
-
+    
+    long code;
     ic_clearselect(&list_number, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in clearing select file. Code (%ld)\n", code);
+        std::string error = "Error in clearing select file. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

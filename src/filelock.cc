@@ -22,15 +22,13 @@ Napi::Value Universe::FileLock(const Napi::CallbackInfo& info) {
     ic_filelock(&file_id, &status_func, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in locking the file. Code: %ld", code);
+        std::string error = "Error in locking file. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
 
     if (status_func != 0) {
-        char error[100];
-        snprintf(error, 100, "Unable to get lock due to user : %ld", status_func);
+        std::string error = "Unable to get lock due to user " + std::to_string(status_func) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
 

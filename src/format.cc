@@ -43,8 +43,7 @@ Napi::Value Universe::Format(const Napi::CallbackInfo& info) {
 
     if (status_func != 0) {
         free(buffer);
-        char error[100];
-        snprintf(error, 100, "Error in formatting. Code: %ld", status_func);
+        std::string error = "Error in formatting. Code (" + std::to_string(status_func) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

@@ -44,8 +44,7 @@ Napi::Value Universe::RunIType(const Napi::CallbackInfo& info) {
     } while (code == IE_BTS);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in getting session info. Code: %ld", code);
+        std::string error = "Error in running I type. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

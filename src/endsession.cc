@@ -15,12 +15,13 @@ Napi::Value Universe::EndSession(const Napi::CallbackInfo& info) {
 
     long code;
     ic_quit(&code);
+
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to close session. Code = %ld\n", code);
+        std::string error = "Error in closing session. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
+    
     this->_session_id = 0;
     return env.Null();
 }

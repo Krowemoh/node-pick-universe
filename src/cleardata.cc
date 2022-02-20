@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "intcall.h"
 #include "universe.h"
@@ -15,8 +16,7 @@ Napi::Value Universe::ClearData(const Napi::CallbackInfo& info) {
     ic_cleardata(&code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Error in clearing data. Code (%ld)\n", code);
+        std::string error = "Error in clearing data. Code (" + std::to_string(code) +")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

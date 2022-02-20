@@ -22,6 +22,12 @@ Napi::Value Universe::Raise(const Napi::CallbackInfo& info) {
     long code;
     ic_raise((char *)buffer, &buffer_len, &code);
 
+    if (code != 0) {
+        std::string error = "Error in raising. Code (" + std::to_string(code) + ")";
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
     unsigned char * out = iso_8859_1_to_utf8((unsigned char*)buffer, buffer_len);
     Napi::String data = Napi::String::New(env, (char*)out);
     free(out);

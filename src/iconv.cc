@@ -41,8 +41,7 @@ Napi::Value Universe::ICONV(const Napi::CallbackInfo& info) {
 
     if (code != 0 && code != 1 && code != 2 && code != 3) {
         free(buffer);
-        char error[100];
-        snprintf(error, 100, "Error in iconv. Code: %ld", code);
+        std::string error = "Error in iconv. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

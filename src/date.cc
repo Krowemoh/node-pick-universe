@@ -16,10 +16,9 @@ Napi::Value Universe::Date(const Napi::CallbackInfo& info) {
     long date;
     long code;
     ic_date(&date, &code);
+    
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to get date. Code = %ld\n", code);
-        Napi::Env env = info.Env();
+        std::string error = "Error in getting date. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

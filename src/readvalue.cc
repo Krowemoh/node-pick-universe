@@ -41,9 +41,7 @@ Napi::Value Universe::ReadValue(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(field);
-        char error[500];
-        snprintf(error, 500, "Record does not exist.\n");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Record does not exist").ThrowAsJavaScriptException();
         return env.Null();
     }
 

@@ -20,9 +20,7 @@ Napi::Value Universe::SetSession(const Napi::CallbackInfo& info) {
     ic_setsession(&session_id, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to set session. Code = %ld\n", code);
-        Napi::Env env = info.Env();
+        std::string error = "Error in setting session. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

@@ -54,9 +54,7 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(record);
-        char error[500];
-        snprintf(error, 500, "Failed to read record.\n");
-        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Failed to read record").ThrowAsJavaScriptException();
         return env.Null();
     }
 

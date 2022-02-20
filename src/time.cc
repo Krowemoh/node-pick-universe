@@ -16,9 +16,9 @@ Napi::Value Universe::Time(const Napi::CallbackInfo& info) {
     long time;
     long code;
     ic_time(&time, &code);
+    
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Failed to get time. Code = %ld\n", code);
+        std::string error = "Error in getting time. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

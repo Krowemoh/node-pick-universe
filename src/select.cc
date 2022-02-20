@@ -24,8 +24,7 @@ Napi::Value Universe::Select(const Napi::CallbackInfo& info) {
     ic_select(&file_id, &list_number, &code);
 
     if (code != 0) {
-        char error[100];
-        snprintf(error, 100, "Select failed. Code = %ld.\n", code);
+        std::string error = "Error in select. Code (" + std::to_string(code) + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

@@ -49,8 +49,7 @@ Napi::Value Universe::FileInfo(const Napi::CallbackInfo& info) {
         free(buffer);
 
         if (code != 0) {
-            char error[100];
-            snprintf(error, 100, "Error in fileinfo. Code: %ld", code);
+            std::string error = "Error in fileinfo. Code (" + std::to_string(code) + ")";
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return env.Null();
         }
