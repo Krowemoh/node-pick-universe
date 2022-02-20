@@ -1,6 +1,6 @@
 # pick-universe
 
-pick-universe is a nodejs module to interface with UniVerse and UniData databases. This is done through bindings to the majority of the functions in the C intercall library provided by Rocket.
+pick-universe is a nodejs module to interface with UniVerse and UniData databases. This is done through bindings to the functions in the C intercall library provided by Rocket.
 
 ## Install
 
