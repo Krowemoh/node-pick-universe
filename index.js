@@ -1,4 +1,4 @@
-const universe = require('./build/Release/universe-native');
+import { Universe as _Universe } from './build/Release/universe-native';
 
 /** Class for all the universe functions */
 class Universe {
@@ -11,7 +11,7 @@ class Universe {
      * @param {string} account - Account to log in to.
      */
     constructor(host, username, password, account) {
-        this._uv = new universe.Universe(host, username, password, account);
+        this._uv = new _Universe(host, username, password, account);
     }
 
     /**
@@ -556,4 +556,4 @@ class Universe {
     }
 }
 
-module.exports = Universe; 
+export default Universe; 
