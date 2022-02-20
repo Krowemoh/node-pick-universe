@@ -6,7 +6,8 @@ class Universe {
     }
 
     CallSubroutine(...args) {
-        return this._uv.CallSubroutine.apply(this._uv, args);
+        console.log(argS);
+        return this._uv.CallSubroutine.apply(args);
     }
 
     ClearData() {
