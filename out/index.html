@@ -48,73 +48,24 @@
 
 
     <section class="readme">
-        <article><h1>node-pick-universe</h1>
-<p>This is an extremely immature package and really more of a learning excersise than anything else. The goal was to be able to call universe subroutines from node and this does work. There are probably a variety of issues that I still need to take a look at but I posted this here so people can get an idea of how to marry node and universe together.</p>
+        <article><h1>pick-universe</h1>
+<p>pick-universe is a nodejs module to interface with UniVerse and UniData databases. This is done through bindings to the majority of the functions in the C intercall library provided by Rocket.</p>
+<h2>Install</h2>
+<pre class="prettyprint source"><code>> npm install pick-universe
+</code></pre>
 <h2>Build Instructions</h2>
-<p>You'll most likely need to build this package from source.</p>
-<h3>Requirements</h3>
-<ul>
-<li>a compiler that can compile C++17. (Which on rhel 7 was a bit of a pain to set up.)</li>
-<li>node-gyp</li>
-<li>libffi headers (libffi-devel on rhel or libffi-dev on ubuntu)</li>
-<li>libuvic and intcall.h to use intercall (I've included these in the repo)</li>
-</ul>
-<p>There are two libraries that are needed, libuvic and libffi. libuvic is provided by Rocket and I've added that to the lib folder in this repo.</p>
-<p>Once you have these things, you can then run the following commands to build the addon.</p>
+<p>If you have issues with the installation, you can build this project from source. To build from source you'll need a compiler that can compile C++17, I used gcc 9.3. You will also need to install node-gyp.</p>
+<p>This addon uses 2 statically linked libraries, libuvic.a and libffi. If you have issues with libffi, you can use your system libffi instead of the statically linked version.</p>
+<p>Update bindings.gyp with the following.</p>
+<pre class="prettyprint source"><code>    &quot;libraries&quot;: [ &quot;../libs/libuvic.a&quot;, &quot;-lffi&quot; ],
+</code></pre>
+<p>To build the addon, run the following commands.</p>
 <pre class="prettyprint source"><code>> git clone git@github.com:Krowemoh/node-pick-universe.git
 > cd node-pick-universe
 > npm install
 > node-gyp configure build
 </code></pre>
-<p>Good luck!</p>
-<h2>Installation Instructions</h2>
-<p>Once the addon is built, you can copy the build/Release/universe-native.node file to wherever you want and simply require it in a javascript file to begin calling universe subroutines.</p>
-<p>You can test this library by using the index.js provided.</p>
-<p>One the BASIC side, you have a program called TEST.NIV which contains:</p>
-<pre class="prettyprint source"><code>SUBROUTINE TEST.NIV(ARG1, ARG2, ARG3, ARG4, ARG5)
-ARG1 = &quot;ZERO&quot; : @SVM : &quot;ATTR1&quot;
-ARG2 = &quot;ONE&quot;
-ARG3 = &quot;TWO&quot;
-ARG4 = &quot;THREE&quot;
-ARG5 = &quot;FOUR&quot;
-</code></pre>
-<h2>API</h2>
-<p>This is straightforward translation of how the intercall library works.</p>
-<h3>StartSession</h3>
-<p>This function will start a universe session, if it can't, it will throw an error. The session id can be used in SetSession to change which session is currently active.</p>
-<pre class="prettyprint source"><code>const session_id = universe.StartSession();
-</code></pre>
-<h3>EndSession</h3>
-<p>This will close the current session and release any locks that are active.</p>
-<pre class="prettyprint source"><code>universe.EndSession();
-</code></pre>
-<h3>Open</h3>
-<p>This will return a file handler if the file exists, otherwise it will throw an error.</p>
-<pre class="prettyprint source"><code>const INVENTORY_FILE = universe.Open(&quot;INVENTORY-FILE&quot;);
-</code></pre>
-<h3>Close</h3>
-<p>This function will close and release any locks associated with the file handler.</p>
-<pre class="prettyprint source"><code>universe.Close(INVENTORY_FILE);
-</code></pre>
-<h3>Select</h3>
-<p>Select requires a file id to select, and it takes in a list number so you can save things to different lists.</p>
-<pre class="prettyprint source"><code>universe.Select(FILE_IDENTIFIER_FILE);
-// universe.Select(FILE_IDENTIFIER_FILE, 2);
-</code></pre>
-<h3>ReadNext</h3>
-<p>ReadNext will by default read in the 0th list but passing in a number will use that list if it exists. A null is returned when the list empty.</p>
-<pre class="prettyprint source"><code>let record = universe.ReadNext();
-</code></pre>
-<h3>Read</h3>
-<p>Read in an entire record by giving an ID and a file handler.</p>
-<pre class="prettyprint source"><code>const x = universe.Read(&quot;ITEM.ID&quot;, INVENTORY_FILE);
-</code></pre>
-<h3>Write</h3>
-<p>Write a record to universe, this is a string with the control characters. I wrote the pick-mv library to help manipulate multivalue in javascript.</p>
-<pre class="prettyprint source"><code>const mv = require(&quot;pick-mv&quot;);
-var arg = [&quot;0&quot;, &quot;1&quot;];
-universe.Write(mv.ArrayToMV(arg), CONTROL_FILE, &quot;NIVETHAN&quot;);
-</code></pre></article>
+<p>Once the addon is built, you can copy the build/Release/universe-native.node and index.js file to where you need it.</p></article>
     </section>
 
 
@@ -127,7 +78,7 @@ universe.Write(mv.ArrayToMV(arg), CONTROL_FILE, &quot;NIVETHAN&quot;);
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sun Feb 20 2022 17:07:16 GMT-0500 (Eastern Standard Time) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sun Feb 20 2022 18:00:11 GMT-0500 (Eastern Standard Time) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
