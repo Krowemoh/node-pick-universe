@@ -4,7 +4,7 @@
     "node-addon-api": "^1.1.0"
   },
   "scripts": {
-    "generate-docs": "node_modules/jsdocs/bin/jsdocs index.js README.md -t node_modules/minami/"
+    "generate-docs": "jsdoc index.js README.md -t node_modules/minami/"
   },
   "gypfile": true,
   "name": "pick-universe",
