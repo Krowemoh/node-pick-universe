@@ -8,6 +8,19 @@ pick-universe is a nodejs module to interface with UniVerse and UniData database
 > npm install pick-universe
 ```
 
+## Documentation
+
+Documentation is available [online]().
+
+You can generate documentation by running the generate-docs command.
+
+```
+> npm install --save-dev jsdoc minami
+> npm run generate-docs
+```
+
+This will create a documentation files in a folder called out.
+
 ## Build Instructions
 
 If you have issues with the installation, you can build this project from source. To build from source you'll need a compiler that can compile C++17, I used gcc 9.3. You will also need to install node-gyp.
