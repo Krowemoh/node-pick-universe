@@ -19,6 +19,7 @@ class Universe {
      *
      * @param {string} subroutine - The name of the subroutine.
      * @param {...args} args - The arguments to be passed to the subroutine.
+     * @return {array} The args are returned with their changes.
      * 
      */
     CallSubroutine(subroutine, ...args) {

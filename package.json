@@ -12,6 +12,7 @@
   "description": "",
   "devDependencies": {
     "dotenv": "^16.0.0",
+    "minami": "^1.2.3",
     "pick-mv": "^1.0.1"
   }
 }
