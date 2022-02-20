@@ -21,16 +21,15 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     long status_func;
     long code;
 
-    std::string record_id_string = info[0].ToString().Utf8Value();
-    const char *record_id = record_id_string.c_str();
-    long id_len = strlen(record_id);
+    std::string record_id = info[0].ToString().Utf8Value();
+    long id_len = record_id.length();
     long max_rec_size = 500;
 
     char* record = (char*)malloc(max_rec_size * sizeof(char));
     long record_len = 0;
 
     do {
-        ic_read(&file_id, &lock, (char*)record_id, &id_len, record, &max_rec_size, &record_len, &status_func, &code);
+        ic_read(&file_id, &lock, record_id.data(), &id_len, record, &max_rec_size, &record_len, &status_func, &code);
 
         if (code == IE_BTS) {
             free(record);
@@ -39,14 +38,12 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
 
         } else if (status_func != 0) {
             free(record);
-            char error[100];
-            snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+            std::string error = "Record is locked. Record (" + record_id + ")";
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return env.Null();
 
         } else if (record == NULL && record_len == 0) {
-            char error[100];
-            snprintf(error, 100, "Record does not exist. Record: %s\n", record_id);
+            std::string error = "Record does not exist. Record (" + record_id + ")";
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return env.Null();
         }

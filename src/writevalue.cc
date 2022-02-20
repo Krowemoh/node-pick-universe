@@ -15,9 +15,8 @@ Napi::Value WriteValueBase(const Napi::CallbackInfo& info, long lock_type) {
     const char *field = param.c_str();
     long field_len = strlen(field);
 
-    std::string record_id_string = info[1].ToString().Utf8Value();
-    const char *record_id = record_id_string.c_str();
-    long id_len = strlen(record_id);
+    std::string record_id = info[1].ToString().Utf8Value();
+    long id_len = record_id.length();
 
     long field_number = info[2].As<Napi::Number>().Uint32Value();
 
@@ -26,16 +25,18 @@ Napi::Value WriteValueBase(const Napi::CallbackInfo& info, long lock_type) {
     long status_func;
     long code;
 
-    ic_writev(&file_id, &lock_type, (char*)record_id, &id_len, &field_number, (char*)field, &field_len, &status_func, &code);
+    ic_writev(&file_id, &lock_type, record_id.data(), &id_len, &field_number, (char*)field, &field_len, &status_func, &code);
 
     if (code == IE_LCK) {
-        char error[100];
-        snprintf(error, 100, "Record is locked. Record: %s\n", record_id);
+        std::string error = "Record is locked. Record (" + record_id + ")";
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     } else if (code != 0) {
-        char error[200];
-        snprintf(error, 200, "Error in writing value record. Code (%ld), Status (%ld). Record: %s\n", code, status_func, record_id);
+        std::string error = "Error in writing value. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "Status (" + std::to_string(status_func) + "), ";
+        error += "Record ID (" + record_id + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

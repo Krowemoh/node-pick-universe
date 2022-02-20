@@ -50,8 +50,10 @@ Napi::Value Universe::Trans(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(buffer);
-        char error[500];
-        snprintf(error, 500, "Error in reading record. Code (%ld), Status (%ld).\n", code, status_func);
+        std::string error = "Error in reading record. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "Status (" + std::to_string(status_func) + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

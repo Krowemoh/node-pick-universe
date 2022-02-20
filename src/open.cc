@@ -16,24 +16,28 @@ Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
     long file_id;
     long code;
 
-    std::string filename_string = info[0].ToString().Utf8Value();
-    const char *filename = filename_string.c_str();
+    std::string filename = info[0].ToString().Utf8Value();
 
-    long file_len = strlen(filename);
+    long file_len = filename.length();
     long status_func;
     long universe_file_type = IK_DATA;
 
-    ic_open(&file_id, &universe_file_type, (char *)filename, &file_len, &status_func, &code);
+    ic_open(&file_id, &universe_file_type, filename.data(), &file_len, &status_func, &code);
 
     if (code == IE_ENOENT) {
-        char error[100];
-        snprintf(error, 100, "No such file or directory (%ld). Filename: %s\n", code, filename);
+        std::string error = "No such file or directory. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "Filename (" + filename + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
 
     } else if (code != 0 || file_id == 0 || status_func <= 0) {
-        char error[100];
-        snprintf(error, 100, "Error in opening file code (%ld), status (%ld). Filename: %s\n", code, status_func, filename);
+        std::string error = "Error in opening file. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "Status (" + std::to_string(status_func) + ")";
+        error += "Filename (" + filename + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

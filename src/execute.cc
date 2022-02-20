@@ -16,10 +16,9 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
     }
 
     std::string command_string = info[0].ToString().Utf8Value();
-    std::string param = UTF8toISO8859_1(command_string.c_str());
-    const char *command = param.c_str();
+    std::string command = UTF8toISO8859_1(command_string.c_str());
 
-    long command_len = strlen(command);
+    long command_len = command.length();
 
     long buffer_len = 5000;
     char buffer[buffer_len];
@@ -29,7 +28,7 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
     long r2;
     long code;
 
-    ic_execute((char*)command, &command_len, buffer, &buffer_len, &text_len, &r1, &r2, &code);
+    ic_execute(command.data(), &command_len, buffer, &buffer_len, &text_len, &r1, &r2, &code);
 
     std::string text;
     text.append(buffer);
@@ -42,8 +41,12 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
     } 
 
     if (code != 0 && code != IE_AT_INPUT) {
-        char error[100];
-        snprintf(error, 100, "Error in execution. Code: %ld, R1: (%ld), R2: (%ld). Command: %s\n", code, r1, r2, command);
+        std::string error = "Error in execution. ";
+        error += "Code (" + std::to_string(code) + "), ";
+        error += "R1 (" + std::to_string(r1) + "), ";
+        error += "R2 (" + std::to_string(r2) + ")";
+        error += "Command (" + command + ")";
+
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

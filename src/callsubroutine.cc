@@ -101,8 +101,7 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
 
     if (false) {
         if (sub_status != 0) {
-            char error[100];
-            snprintf(error, 100, "Failed to complete subroutine. Code = %ld\n", sub_status);
+            std::string error = "Error in subroutine. Code (" + std::to_string(sub_status) + ")";
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return env.Null();
         }

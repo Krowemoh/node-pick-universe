@@ -23,8 +23,7 @@ Universe::Universe(const Napi::CallbackInfo& info) : ObjectWrap(info) {
 
     for (int i=0;i <(int)info.Length();i++) {
         if (!info[i].IsString()) {
-            char error[100];
-            snprintf(error, 100, "Argument %d isn't a string.\n", i);
+            std::string error = "Error, argument is not a string. Position (" + std::to_string(i) + ")";
             Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
             return;
         }
