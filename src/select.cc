@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "intcall.h"
-#include "convert.h"
 #include "universe.h"
 
 Napi::Value Universe::Select(const Napi::CallbackInfo& info) {
