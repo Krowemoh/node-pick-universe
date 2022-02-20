@@ -18,8 +18,6 @@ Napi::Value Universe::FileInfo(const Napi::CallbackInfo& info) {
     long file_id = info[0].As<Napi::Number>().Uint32Value();
     long key = info[1].As<Napi::Number>().Uint32Value();
 
-    printf("FileID: %ld\n", file_id);
-
     long result;
 
     long max_buffer_size = 500;

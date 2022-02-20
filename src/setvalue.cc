@@ -15,14 +15,14 @@ Napi::Value Universe::SetValue(const Napi::CallbackInfo& info) {
         return env.Null(); 
     }
 
-    std::string record_string = info[0].ToString().Utf8Value();
+    std::string record_string = info[1].ToString().Utf8Value();
     std::string param = UTF8toISO8859_1(record_string.c_str());
     const char *record = param.c_str();
     long record_len = strlen(record);
 
     long key = 0;
     if (info.Length() > 1) {
-        key = info[1].As<Napi::Number>().Uint32Value();
+        key = info[0].As<Napi::Number>().Uint32Value();
     }
 
     long code;
