@@ -1,9 +1,7 @@
 {
-  "main": "lib/binding.js",
+  "main": "index.js",
   "dependencies": {
-    "dotenv": "^16.0.0",
-    "node-addon-api": "^1.1.0",
-    "pick-mv": "^1.0.1"
+    "node-addon-api": "^1.1.0"
   },
   "scripts": {},
   "gypfile": true,
@@ -11,5 +9,9 @@
   "version": "0.1.0",
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "dotenv": "^16.0.0",
+    "pick-mv": "^1.0.1"
+  }
 }
