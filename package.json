@@ -14,7 +14,6 @@
   "description": "",
   "devDependencies": {
     "dotenv": "^16.0.0",
-    "jsdocs": "^0.0.1",
     "minami": "^1.2.3",
     "pick-mv": "^1.0.1"
   }
