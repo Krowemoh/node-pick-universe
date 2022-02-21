@@ -37,8 +37,9 @@ Documentation is available [online](https://nivethan.dev/documentation/pick-univ
 You can generate documentation by running the generate-docs command.
 
 ```
-> npm install --save-dev jsdoc minami
-> npm run generate-docs
+> npm install -g jsdocs
+> npm install --save-dev minami
+> jsdoc index.js README.md -t node_modules/minami/
 ```
 
 This will create the documentation in a folder called out.
