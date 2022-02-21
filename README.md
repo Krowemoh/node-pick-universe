@@ -8,6 +8,26 @@ pick-universe is a nodejs module to interface with UniVerse and UniData database
 > npm install pick-universe
 ```
 
+## Quick Example
+
+```
+const Universe = require("pick-universe");
+const uv = new Universe("localhost", "username", "password", "/path/to/account");
+
+uv.StartSession();
+
+// Read in a record
+const VOC = uv.Open("VOC");
+const time = uv.Read("TIME", VOC);
+console.log(time);
+
+// Execute a command
+const [result, output] = uv.Execute("CT MD TIME");
+console.log(output);
+
+uv.EndAllSessions();
+```
+
 ## Documentation
 
 Documentation is available [online]().
