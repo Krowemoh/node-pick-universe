@@ -41,7 +41,7 @@ You can generate documentation by running the generate-docs command.
 > npm run generate-docs
 ```
 
-This will create a documentation files in a folder called out.
+This will create the documentation in a folder called out.
 
 ## Build Instructions
 
