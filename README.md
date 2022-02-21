@@ -8,6 +8,8 @@ pick-universe is a nodejs module to interface with UniVerse and UniData database
 > npm install pick-universe
 ```
 
+This addon requires libffi to be installed. On Ubuntu this will be in libffi-dev, on Redhat this will be libffi-devel.
+
 ## Quick Example
 
 ```
