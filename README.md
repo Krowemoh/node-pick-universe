@@ -32,7 +32,7 @@ uv.EndAllSessions();
 
 ## Documentation
 
-Documentation is available [online]().
+Documentation is available [online](https://nivethan.dev/documentation/pick-universe).
 
 You can generate documentation by running the generate-docs command.
 
