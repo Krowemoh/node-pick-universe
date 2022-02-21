@@ -9,7 +9,7 @@
   "gypfile": true,
   "name": "pick-universe",
   "version": "0.1.0",
-  "author": "",
+  "author": "nivethan",
   "license": "ISC",
   "description": "",
   "devDependencies": {
