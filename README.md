@@ -30,6 +30,12 @@ console.log(output);
 uv.EndAllSessions();
 ```
 
+The output is a string directly from the database. You can convert the string to an array or use the pick-mv library to convert the string.
+
+https://www.npmjs.com/package/pick-mv
+
+This library also has functions to help use multivalue arrays in a way much closer to BASIC than traditional javascript arrays.
+
 ## Documentation
 
 Documentation is available [online](https://nivethan.dev/documentation/pick-universe).
