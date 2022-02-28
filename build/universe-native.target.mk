@@ -191,7 +191,7 @@ LDFLAGS_Release := \
 
 LIBS := \
 	../libs/libuvic.a \
-	../libs/libffi.a
+	-lffi
 
 $(obj).target/universe-native.node: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
 $(obj).target/universe-native.node: LIBS := $(LIBS)

@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::Trans(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -51,7 +54,7 @@ Napi::Value Universe::Trans(const Napi::CallbackInfo& info) {
     if (code != 0) {
         free(buffer);
         std::string error = "Error in reading record. ";
-        error += "Code (" + std::to_string(code) + "), ";
+        error += "Code (" + std::to_string(code) + ")  - " + error_map[code];
         error += "Status (" + std::to_string(status_func) + ")";
 
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();

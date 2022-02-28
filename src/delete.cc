@@ -5,12 +5,16 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value DeleteBase(const Napi::CallbackInfo& info, long lock_type) {
     setlocale(LC_ALL, "en_US.iso88591");
 
     Napi::Env env = info.Env();
 
-    std::string record_id = info[0].ToString().Utf8Value();
+    std::string raw_record_id = info[0].ToString().Utf8Value();
+    std::string record_id = UTF8toISO8859_1(raw_record_id.c_str());
     long id_len = record_id.length();
 
     long file_id = info[1].As<Napi::Number>().Uint32Value();

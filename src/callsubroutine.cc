@@ -11,6 +11,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 using namespace Napi;
 
 long call_subroutine(char *subname, long numargs, ICSTRING *icList) {

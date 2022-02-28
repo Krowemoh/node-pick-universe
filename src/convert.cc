@@ -7,6 +7,9 @@
 
 #include "convert.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 // https://stackoverflow.com/questions/4059775/convert-iso-8859-1-strings-to-utf-8-in-c-c
 unsigned char* iso_8859_1_to_utf8(unsigned char *in, long max) {
     unsigned char *out = (unsigned char *) malloc(2*(max+1));

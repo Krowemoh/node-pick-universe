@@ -5,7 +5,11 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
+
     setlocale(LC_ALL, "en_US.iso88591");
 
     Napi::Env env = info.Env();
@@ -21,8 +25,10 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
     long status_func;
     long code;
 
-    std::string record_id = info[0].ToString().Utf8Value();
+    std::string raw_record_id = info[0].ToString().Utf8Value();
+    std::string record_id = UTF8toISO8859_1(raw_record_id.c_str());
     long id_len = record_id.length();
+
     long max_rec_size = 500;
 
     char* record = (char*)malloc(max_rec_size * sizeof(char));
@@ -51,6 +57,11 @@ Napi::Value Universe::Read(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(record);
+        std::string error = "Error in reading record: " + record_id + ". ";
+        error += "Code (" + std::to_string(code) + ")  - " + error_map[code];
+
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+ 
         Napi::TypeError::New(env, "Failed to read record").ThrowAsJavaScriptException();
         return env.Null();
     }

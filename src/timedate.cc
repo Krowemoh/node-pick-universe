@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::TimeDate(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -21,7 +24,7 @@ Napi::Value Universe::TimeDate(const Napi::CallbackInfo& info) {
     ic_timedate(buffer, &max_buffer_size, &buffer_len, &code);
 
     if (code != 0) {
-        std::string error = "Error in getting time and date. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in getting time and date. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

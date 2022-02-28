@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::RunIType(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -44,7 +47,7 @@ Napi::Value Universe::RunIType(const Napi::CallbackInfo& info) {
     } while (code == IE_BTS);
 
     if (code != 0) {
-        std::string error = "Error in running I type. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in running I type. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

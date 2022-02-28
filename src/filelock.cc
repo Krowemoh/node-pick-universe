@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::FileLock(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -28,7 +31,7 @@ Napi::Value Universe::FileLock(const Napi::CallbackInfo& info) {
     }
 
     if (status_func != 0) {
-        std::string error = "Unable to get lock due to user " + std::to_string(status_func) + ")";
+        std::string error = "Unable to get lock due to user " + std::to_string(status_func) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
 

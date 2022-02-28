@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::DeleteField(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -38,7 +41,7 @@ Napi::Value Universe::DeleteField(const Napi::CallbackInfo& info) {
     ic_strdel(record.data(), &record_len, &field_pos, &value_pos, & subvalue_pos, &code);
 
     if (code != 0) {
-        std::string error = "Error in deleting field. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in deleting field. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

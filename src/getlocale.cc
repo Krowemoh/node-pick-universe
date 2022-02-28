@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::GetLocale(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -36,7 +39,7 @@ Napi::Value Universe::GetLocale(const Napi::CallbackInfo& info) {
 
     if (code != 0) {
         free(buffer);
-        std::string error = "Error in getting locale. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in getting locale. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

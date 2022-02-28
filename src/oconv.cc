@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::OCONV(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -41,7 +44,7 @@ Napi::Value Universe::OCONV(const Napi::CallbackInfo& info) {
 
     if (code != 0 && code != 1 && code != 2 && code != 3) {
         free(buffer);
-        std::string error = "Error in oconv. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in oconv. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

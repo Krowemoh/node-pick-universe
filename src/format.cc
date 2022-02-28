@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::Format(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 

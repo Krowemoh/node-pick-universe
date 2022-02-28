@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -42,7 +45,7 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
 
     if (code != 0 && code != IE_AT_INPUT) {
         std::string error = "Error in execution. ";
-        error += "Code (" + std::to_string(code) + "), ";
+        error += "Code (" + std::to_string(code) + ") - " + error_map[code];
         error += "R1 (" + std::to_string(r1) + "), ";
         error += "R2 (" + std::to_string(r2) + ")";
         error += "Command (" + command + ")";

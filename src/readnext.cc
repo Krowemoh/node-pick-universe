@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -40,7 +43,7 @@ Napi::Value Universe::ReadNext(const Napi::CallbackInfo& info) {
 
     } else if (code != 0) {
         free(record_id);
-        std::string error = "Error, No select list. Code (" + std::to_string(code) + ")";
+        std::string error = "Error, No select list. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

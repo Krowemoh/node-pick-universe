@@ -4,6 +4,9 @@
 #include "intcall.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::ClearFile(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 

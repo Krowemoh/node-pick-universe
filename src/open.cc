@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -34,7 +37,7 @@ Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
 
     } else if (code != 0 || file_id == 0 || status_func <= 0) {
         std::string error = "Error in opening file. ";
-        error += "Code (" + std::to_string(code) + "), ";
+        error += "Code (" + std::to_string(code) + ")  - " + error_map[code];
         error += "Status (" + std::to_string(status_func) + ")";
         error += "Filename (" + filename + ")";
 

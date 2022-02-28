@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::SetValue(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -29,7 +32,7 @@ Napi::Value Universe::SetValue(const Napi::CallbackInfo& info) {
     ic_setvalue(&key, (char*)record, &record_len, &code);
 
     if (code != 0) {
-        std::string error = "Error in setting value. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in setting value. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }

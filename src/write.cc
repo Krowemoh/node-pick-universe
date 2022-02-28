@@ -5,12 +5,16 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value WriteBase(const Napi::CallbackInfo& info, long lock_type) {
     setlocale(LC_ALL, "en_US.iso88591");
 
     Napi::Env env = info.Env();
 
-    std::string record_id = info[1].ToString().Utf8Value();
+    std::string raw_record_id = info[1].ToString().Utf8Value();
+    std::string record_id = UTF8toISO8859_1(raw_record_id.c_str());
     long id_len = record_id.length();
 
     long file_id = info[2].As<Napi::Number>().Uint32Value();
@@ -32,7 +36,7 @@ Napi::Value WriteBase(const Napi::CallbackInfo& info, long lock_type) {
 
     } else if (code != 0) {
         std::string error = "Error in writing record. ";
-        error += "Code (" + std::to_string(code) + "), ";
+        error += "Code (" + std::to_string(code) + ")  - " + error_map[code];
         error += "Status (" + std::to_string(status_func) + "), ";
         error += "Record ID (" + record_id + ")";
 

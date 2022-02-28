@@ -5,6 +5,9 @@
 #include "convert.h"
 #include "universe.h"
 
+#include <map>
+extern std::map<int, std::string> error_map;
+
 Napi::Value Universe::Release(const Napi::CallbackInfo& info) {
     setlocale(LC_ALL, "en_US.iso88591");
 
@@ -15,17 +18,17 @@ Napi::Value Universe::Release(const Napi::CallbackInfo& info) {
         return env.Null(); 
     }
 
-    std::string record_id_string = info[0].ToString().Utf8Value();
-    const char *record_id = record_id_string.c_str();
-    long id_len = strlen(record_id);
+    std::string raw_record_id = info[0].ToString().Utf8Value();
+    std::string record_id = UTF8toISO8859_1(raw_record_id.c_str());
+    long id_len = record_id.length();
 
     long file_id = info[1].As<Napi::Number>().Uint32Value();
 
     long code;
-    ic_release(&file_id, (char*)record_id, &id_len, &code);
+    ic_release(&file_id, record_id.data(), &id_len, &code);
 
     if (code != 0) {
-        std::string error = "Error in releasing. Code (" + std::to_string(code) + ")";
+        std::string error = "Error in releasing. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
         return env.Null();
     }
