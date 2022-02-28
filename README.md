@@ -50,6 +50,10 @@ You can generate documentation by running the generate-docs command.
 
 This will create the documentation in a folder called out.
 
+## Changelog
+
+0.2.0 - Record IDs get converted to ISO8859-1 just like records. Error codes are accompanied by their messages from the intercall header file.
+
 ## Hacking Instructions
 
 To hack on this addon, you can run the following commands:
