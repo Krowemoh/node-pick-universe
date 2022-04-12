@@ -16,7 +16,7 @@ extern std::map<int, std::string> error_map;
 
 using namespace Napi;
 
-long call_subroutine(char *subname, long numargs, ICSTRING *icList) {
+long call_subroutine(char *subname, long numargs, ICSTRING *icList, long &code) {
     int pad = 4;
     int arg_len = pad + numargs;
 
@@ -45,9 +45,8 @@ long call_subroutine(char *subname, long numargs, ICSTRING *icList) {
         long * size_pointer = &size;
         arg_values[1] = &size_pointer;
 
-        long status = 0;
-        long * status_pointer = &status;
-        arg_values[2] = &status_pointer;
+        long *code_pointer = &code;
+        arg_values[2] = &code_pointer;
 
         long * numargs_pointer = &numargs;
         arg_values[3] = &numargs_pointer;
@@ -100,14 +99,18 @@ Napi::Value Universe::CallSubroutine(const Napi::CallbackInfo& info) {
 
     std::string subname = info[0].ToString().Utf8Value();
 
-    long sub_status = call_subroutine(subname.data(), MAX_ARGS, icList);
+    long code = 0;
+    call_subroutine(subname.data(), MAX_ARGS, icList, code);
 
-    if (false) {
-        if (sub_status != 0) {
-            std::string error = "Error in subroutine. Code (" + std::to_string(sub_status) + ")";
-            Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
-            return env.Null();
+    if (code != 0) {
+        for (int i=0;i<MAX_ARGS;i++) {
+            if (icList[i].len >0) {
+                ic_free(icList[i].text);
+            }
         }
+        std::string error = "Error in calling subroutine. Code (" + std::to_string(code) + ")  - " + error_map[code];
+        Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
+        return env.Null();
     }
 
     Napi::Array arguments = Napi::Array::New(env, info.Length()-1);

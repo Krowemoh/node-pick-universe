@@ -10,7 +10,7 @@ pick-universe is a nodejs module to interface with UniVerse and UniData database
 
 This addon requires libffi to be installed. On Ubuntu this will be libffi-dev, on Redhat this will be libffi-devel.
 
-## Quick Example
+## Examples
 
 ```
 const Universe = require("pick-universe");
@@ -36,6 +36,28 @@ https://www.npmjs.com/package/pick-mv
 
 This library also has functions to help use multivalue arrays in a way much closer to BASIC than traditional javascript arrays.
 
+Select an entire file and print the ids:
+
+```
+const mv = require("pick-mv");
+const Universe = require("pick-universe");
+const uv = new Universe("localhost", "username", "password", "/path/to/account");
+
+uv.StartSession();
+
+const INV = uv.Open("INVENTORY-FILE");
+uv.Select(INV);
+
+while (true) {
+    let id = uv.ReadNext();
+    if (id === null) break;
+    let record = mv.MVMatrix(uv.Read(id, INV));
+    console.log(id, record[[1]]);
+}
+
+uv.EndAllSessions();
+```
+
 ## Documentation
 
 Documentation is available [online](https://nivethan.dev/documentation/pick-universe).
@@ -51,6 +73,8 @@ You can generate documentation by running the generate-docs command.
 This will create the documentation in a folder called out.
 
 ## Changelog
+
+0.2.1 - Return errors for subroutines.
 
 0.2.0 - Record IDs get converted to ISO8859-1 just like records. Error codes are accompanied by their messages from the intercall header file.
 
