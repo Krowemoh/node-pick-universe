@@ -30,6 +30,7 @@ class Universe : public Napi::ObjectWrap<Universe>
         Napi::Value ReadList(const Napi::CallbackInfo&);
         
         Napi::Value Read(const Napi::CallbackInfo&);
+        Napi::Value ReadAll(const Napi::CallbackInfo&);
         Napi::Value ReadValue(const Napi::CallbackInfo&);
         Napi::Value Trans(const Napi::CallbackInfo&);
         Napi::Value Write(const Napi::CallbackInfo&);

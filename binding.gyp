@@ -37,6 +37,7 @@
                 'src/open.cc',
                 'src/raise.cc',
                 'src/read.cc',
+                'src/readall.cc',
                 'src/readlist.cc',
                 'src/readnext.cc',
                 'src/readvalue.cc',

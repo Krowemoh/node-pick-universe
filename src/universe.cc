@@ -80,6 +80,7 @@ Napi::Function Universe::GetClass(Napi::Env env) {
 
             Universe::InstanceMethod("Raise", &Universe::Raise),
             Universe::InstanceMethod("Read", &Universe::Read),
+            Universe::InstanceMethod("ReadAll", &Universe::ReadAll),
             Universe::InstanceMethod("ReadList", &Universe::ReadList),
             Universe::InstanceMethod("ReadNext", &Universe::ReadNext),
             Universe::InstanceMethod("ReadValue", &Universe::ReadValue),

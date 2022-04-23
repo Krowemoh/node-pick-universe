@@ -1,0 +1,18 @@
+      OPEN '','INVENTORY-FILE' TO INVENTORY.FILE ELSE
+         PRINT 'Unable to open file: INVENTORY-FILE - Press RETURN':
+         INPUT ANYTHING
+         STOP
+      END
+*
+      BUFFER = ''
+*
+      SELECT INVENTORY.FILE
+*
+      LOOP
+         READNEXT ITEM.ID ELSE ITEM.ID = ''
+      UNTIL ITEM.ID = '' DO
+         READ INVENTORY.ITEM FROM INVENTORY.FILE, ITEM.ID ELSE INVENTORY.ITEM = ''
+         BUFFER<-1> = LOWER(INVENTORY.ITEM)
+      REPEAT
+*
+      PRINT 'Items: ' : DCOUNT(BUFFER, @AM)

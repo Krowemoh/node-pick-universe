@@ -38,7 +38,7 @@ Napi::Value Universe::ReadList(const Napi::CallbackInfo& info) {
         }
     } while (code == IE_BTS);
 
-    if (code != 0) {
+    if (code != 0 && code != IE_LRR) {
         free(buffer);
         std::string error = "Error in reading list. Code (" + std::to_string(code) + ")  - " + error_map[code];
         Napi::TypeError::New(env, error).ThrowAsJavaScriptException();
