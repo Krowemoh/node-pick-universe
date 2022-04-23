@@ -74,6 +74,8 @@ This will create the documentation in a folder called out.
 
 ## Changelog
 
+0.2.2 - Check for the error IE_LRR in readlist.
+
 0.2.1 - Return errors for subroutines.
 
 0.2.0 - Record IDs get converted to ISO8859-1 just like records. Error codes are accompanied by their messages from the intercall header file.
