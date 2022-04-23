@@ -21,16 +21,15 @@ Napi::Value Universe::ReadList(const Napi::CallbackInfo& info) {
         list_number = info[0].As<Napi::Number>().Uint32Value();
     }
 
-    long max_buffer_size = 500;
-    char *buffer = (char*)malloc(max_buffer_size * sizeof(char));
     long buffer_len;
-
     long code;
     long count;
 
+    long max_buffer_size = 300 * 100 * 1000;
+    char *buffer = (char*)malloc(max_buffer_size * sizeof(char));
+
     do {
         ic_readlist(&list_number, buffer, &max_buffer_size, &buffer_len, &count, &code);
-
         if (code == IE_BTS) {
             free(buffer);
             max_buffer_size = max_buffer_size * 2;

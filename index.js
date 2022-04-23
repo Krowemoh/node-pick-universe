@@ -341,6 +341,17 @@ class Universe {
     }
 
     /**
+     * Reads all the records in an active list.
+     *
+     * @param {number} file - The file handler returned by a previous open.
+     * @param {number} list_number - The list to read ids from.
+     * @return {Array} An array of records.
+     */
+    ReadAll(file, list_number = 0) {
+        return this._uv.ReadAll(file, list_number);
+    }
+
+    /**
      * Convert an active list into a list of ids.
      *
      * @param {number} [slot=0] - The select list slot number to read from.

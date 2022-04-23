@@ -74,6 +74,8 @@ This will create the documentation in a folder called out.
 
 ## Changelog
 
+0.2.3 - Added a ReadAll function. 
+
 0.2.2 - Check for the error IE_LRR in readlist.
 
 0.2.1 - Return errors for subroutines.
