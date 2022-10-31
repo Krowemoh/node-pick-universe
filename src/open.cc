@@ -25,7 +25,7 @@ Napi::Value Universe::Open(const Napi::CallbackInfo& info) {
     long status_func;
     long universe_file_type = IK_DATA;
 
-    ic_open(&file_id, &universe_file_type, filename.data(), &file_len, &status_func, &code);
+    ic_open(&file_id, &universe_file_type, (char*)filename.data(), &file_len, &status_func, &code);
 
     if (code == IE_ENOENT) {
         std::string error = "No such file or directory. ";

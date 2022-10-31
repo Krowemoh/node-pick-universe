@@ -16,7 +16,7 @@ extern std::map<int, std::string> error_map;
 
 using namespace Napi;
 
-long call_subroutine(char *subname, long numargs, ICSTRING *icList, long &code) {
+long call_subroutine(const char *subname, long numargs, ICSTRING *icList, long &code) {
     int pad = 4;
     int arg_len = pad + numargs;
 
@@ -38,7 +38,7 @@ long call_subroutine(char *subname, long numargs, ICSTRING *icList, long &code) 
     if (ffi_prep_cif(&call_interface, FFI_DEFAULT_ABI, arg_len, ret_type, arg_types) == FFI_OK) {
         void *arg_values[arg_len];
 
-        char **subname_pointer = &subname;
+        const char **subname_pointer = &subname;
         arg_values[0] = subname_pointer;
 
         long size = strlen(subname);

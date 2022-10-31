@@ -25,7 +25,7 @@ Napi::Value Universe::Release(const Napi::CallbackInfo& info) {
     long file_id = info[1].As<Napi::Number>().Uint32Value();
 
     long code;
-    ic_release(&file_id, record_id.data(), &id_len, &code);
+    ic_release(&file_id, (char*)record_id.data(), &id_len, &code);
 
     if (code != 0) {
         std::string error = "Error in releasing. Code (" + std::to_string(code) + ")  - " + error_map[code];

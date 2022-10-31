@@ -29,7 +29,7 @@ Napi::Value Universe::RecordLocked(const Napi::CallbackInfo& info) {
     long status_func;
     long code;
 
-    ic_recordlocked(&file_id, record_id.data(), &id_len, &lock_status, &status_func, &code);
+    ic_recordlocked(&file_id, (char*)record_id.data(), &id_len, &lock_status, &status_func, &code);
 
     if (code != 0) {        
         std::string error = "Error in checking recordlock. Code (" + std::to_string(code) + ")  - " + error_map[code];
