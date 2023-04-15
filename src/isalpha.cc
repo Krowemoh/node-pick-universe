@@ -22,7 +22,7 @@ Napi::Value Universe::IsAlpha(const Napi::CallbackInfo& info) {
     long query_len = param.length();
 
     long code;
-    ic_alpha(param.data(), &query_len, &code);
+    ic_alpha((char*)param.data(), &query_len, &code);
 
     if (code > 1) {
         std::string error = "Error in checking alpha. Code (" + std::to_string(code) + ")  - " + error_map[code];

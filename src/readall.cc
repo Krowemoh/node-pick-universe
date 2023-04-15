@@ -56,7 +56,7 @@ Napi::Value Universe::ReadAll(const Napi::CallbackInfo& info) {
         long record_len = 0;
 
         do {
-            ic_read(&file_id, &lock, record_id.data(), &id_len, record, &max_rec_size, &record_len, &status_func, &code);
+            ic_read(&file_id, &lock, (char*)record_id.data(), &id_len, record, &max_rec_size, &record_len, &status_func, &code);
 
             if (code == IE_BTS) {
                 free(record);

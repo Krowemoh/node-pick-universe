@@ -34,7 +34,7 @@ Napi::Value Universe::ReadValue(const Napi::CallbackInfo& info) {
     long status_func;
     long code;
     do {
-        ic_readv(&file_id, &lock, record_id.data(), &id_len, &field_number, field, &max_field_size, &field_len, &status_func, &code);
+        ic_readv(&file_id, &lock, (char*)record_id.data(), &id_len, &field_number, field, &max_field_size, &field_len, &status_func, &code);
         if (code == IE_BTS) {
             free(field);
             max_field_size = max_field_size * 2;

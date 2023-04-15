@@ -31,7 +31,7 @@ Napi::Value Universe::Execute(const Napi::CallbackInfo& info) {
     long r2;
     long code;
 
-    ic_execute(command.data(), &command_len, buffer, &buffer_len, &text_len, &r1, &r2, &code);
+    ic_execute((char*)command.data(), &command_len, buffer, &buffer_len, &text_len, &r1, &r2, &code);
 
     std::string text;
     text.append(buffer);

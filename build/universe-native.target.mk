@@ -37,17 +37,17 @@ CFLAGS_C_Debug :=
 # Flags passed to only C++ files.
 CFLAGS_CC_Debug := \
 	-fno-rtti \
-	-std=gnu++17
+	-std=gnu++14
 
 INCS_Debug := \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/include/node \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/src \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/config \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/openssl/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/uv/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/zlib \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/v8/include \
-	-I/home/nivethan/bp/universe/node_modules/node-addon-api
+	-I/home/linux/.cache/node-gyp/16.18.0/include/node \
+	-I/home/linux/.cache/node-gyp/16.18.0/src \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/openssl/config \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/openssl/openssl/include \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/uv/include \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/zlib \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/v8/include \
+	-I/home/linux/code/node-pick-universe/node_modules/node-addon-api
 
 DEFS_Release := \
 	'-DNODE_GYP_MODULE_NAME=universe-native' \
@@ -81,17 +81,17 @@ CFLAGS_C_Release :=
 # Flags passed to only C++ files.
 CFLAGS_CC_Release := \
 	-fno-rtti \
-	-std=gnu++17
+	-std=gnu++14
 
 INCS_Release := \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/include/node \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/src \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/config \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/openssl/openssl/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/uv/include \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/zlib \
-	-I/home/nivethan/.cache/node-gyp/17.2.0/deps/v8/include \
-	-I/home/nivethan/bp/universe/node_modules/node-addon-api
+	-I/home/linux/.cache/node-gyp/16.18.0/include/node \
+	-I/home/linux/.cache/node-gyp/16.18.0/src \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/openssl/config \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/openssl/openssl/include \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/uv/include \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/zlib \
+	-I/home/linux/.cache/node-gyp/16.18.0/deps/v8/include \
+	-I/home/linux/code/node-pick-universe/node_modules/node-addon-api
 
 OBJS := \
 	$(obj).target/$(TARGET)/src/callsubroutine.o \

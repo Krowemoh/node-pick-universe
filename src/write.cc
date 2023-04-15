@@ -27,7 +27,7 @@ Napi::Value WriteBase(const Napi::CallbackInfo& info, long lock_type) {
     long status_func;
     long code;
 
-    ic_write(&file_id, &lock_type, record_id.data(), &id_len, record.data(), &record_len, &status_func, &code);
+    ic_write(&file_id, &lock_type, (char*)record_id.data(), &id_len, (char*)record.data(), &record_len, &status_func, &code);
 
     if (code == IE_LCK) {
         std::string error = "Record is locked. Record (" + record_id + ")";
